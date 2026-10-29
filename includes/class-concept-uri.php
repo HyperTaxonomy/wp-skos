@@ -138,8 +138,11 @@ class WP_SKOS_Concept_URI {
 			self::not_found();
 		}
 
-		if ( self::prefers_html() ) {
-			// No meaningful archive for a scheme; redirect to term list in admin.
+		// There is no single public "archive" for an entire taxonomy the way there is
+		// for one term, so there is nowhere public to send an HTML-preferring visitor.
+		// Only redirect someone who can actually use the admin Terms screen; everyone
+		// else gets the JSON-LD response rather than being bounced into a login wall.
+		if ( self::prefers_html() && current_user_can( 'manage_categories' ) ) {
 			wp_redirect( admin_url( 'edit-tags.php?taxonomy=' . $taxonomy ), 303 );
 			exit;
 		}

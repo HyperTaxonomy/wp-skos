@@ -9,10 +9,15 @@ nav_order: 3
 
 `GET /wp-skos/concept/{taxonomy}/{slug}` and `GET /wp-skos/scheme/{taxonomy}` inspect the `Accept` header:
 
-- `application/ld+json` or `application/json` → JSON-LD response
-- `text/html` (or anything else) → `303 See Other` to the WordPress term archive
+- An `Accept` header containing `application/ld+json` → JSON-LD response
+- An `Accept` header containing `text/html` but not `application/ld+json` → `303 See Other` redirect
+- Any other `Accept` header, including a bare `*/*` or no header at all → JSON-LD response
 
-This allows browsers to navigate to human-readable archives while semantic clients dereference the concept directly.
+This allows browsers that explicitly ask for HTML to navigate to a human-readable page, while semantic clients and generic HTTP tools — which typically send `Accept: */*` — get JSON-LD by default.
+
+For a **concept** URI, the redirect target is the term's WordPress archive page (its permalink).
+
+For a **scheme** URI, there is no single public "archive" for an entire taxonomy the way there is for one term. The redirect only happens for a visitor who can manage that taxonomy's terms (the `manage_categories` capability), sending them to the admin Terms screen; anyone else gets the JSON-LD response even when their `Accept` header requests HTML, since redirecting them into a wp-admin login wall would not be useful.
 
 ## Taxonomy-qualified URIs
 
