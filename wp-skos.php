@@ -41,7 +41,10 @@ require_once WPSKOS_DIR . 'includes/class-document-search.php';
 require_once WPSKOS_DIR . 'includes/class-concept-uri.php';
 
 add_action( 'plugins_loaded', 'wpskos_init' );
-add_filter( 'plugin_action_links_wp-skos/wp-skos.php', 'wpskos_action_links' );
+// Built dynamically (not hardcoded 'wp-skos/wp-skos.php') so the Settings link still
+// appears when the plugin is installed under a different folder name, e.g. a GitHub
+// zip extracted as 'wp-skos-main'.
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wpskos_action_links' );
 
 /**
  * @since 1.0.0
