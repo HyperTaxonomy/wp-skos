@@ -21,21 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_SKOS_Document_Search {
 
 	/**
-	 * Hard cap on how many matching posts are pulled into PHP and relevance-ranked
-	 * for a single request. Without a cap, a tax_query matching tens of thousands
-	 * of posts would load every matching post ID into memory and build a SQL IN()
-	 * clause of the same size purely to compute pagination — this bounds both.
-	 * `total`/pagination are computed from this same bounded set, so they stay
-	 * internally consistent (every page number the response reports is reachable);
-	 * on a taxonomy with more than this many currently-matching posts, `total`
-	 * undercounts the true match count and the oldest matches are not ranked or
-	 * reachable via pagination.
-	 *
-	 * @since 1.0.0
-	 */
-	private const MAX_CANDIDATES = 5000;
-
-	/**
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
@@ -173,15 +158,15 @@ class WP_SKOS_Document_Search {
 			$tax_query = $tax_groups;
 		}
 
-		// Candidate post-ID set (bounded by self::MAX_CANDIDATES — see its docblock)
-		// in date-desc order. This is the stable secondary order used both for the
-		// total and as the fallback ordering for posts the index does not score.
+		// Full candidate post-ID set (no pagination) in date-desc order. This is
+		// the stable secondary order used both for the total and as the fallback
+		// ordering for posts the index does not score.
 		$candidate_ids = ( new WP_Query( array(
 			'post_type'           => 'post',
 			'post_status'         => 'publish',
 			'tax_query'           => $tax_query,
 			'fields'              => 'ids',
-			'posts_per_page'      => self::MAX_CANDIDATES,
+			'posts_per_page'      => -1,
 			'orderby'             => 'date',
 			'order'               => 'DESC',
 			'ignore_sticky_posts' => true,
