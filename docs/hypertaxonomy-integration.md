@@ -29,6 +29,8 @@ WP-SKOS calls HyperTaxonomy through function-existence-guarded wrappers. It has 
 
 Relevance ordering in the document search is **not** produced by a HyperTaxonomy function — wp-skos runs a direct SQL query against the `wp_htax_search_terms` index table to sum each candidate post's `strength` over the expanded term set. The index stores strength per scoring model, so the query restricts rows to the model HyperTaxonomy uses for search (`htax_strength_model_sql()`). It also gates `relationship_type` per the concept's taxonomy enabled features (mirroring HyperTaxonomy's own scoring), and combines rows sharing a `(post, term)` pair via noisy-OR (`1 − Π(1 − strength)`, regardless of `source_term` or `relationship_type`) before summing across terms — matching HyperTaxonomy's term-strength scorers exactly: a term reached by only one path is unaffected, while a term reached by several distinct source terms scores higher without the combined value ever reaching the ceiling a single direct row can hit.
 
+Collection membership (`WP_SKOS_Builder::build_collection()`) is the other direct SQL exception: it queries the `wp_htax_term_relationships` table for `member_of` rows pointing at the group, since HyperTaxonomy exposes no public function for "all terms that declare membership in this group." Both direct queries are guarded with `SHOW TABLES LIKE` before running, so a HyperTaxonomy schema change degrades to an empty result (no relevance ordering / no Collection members) rather than a fatal error.
+
 ## Feature flags checked
 
 | Flag | Effect when disabled |

@@ -192,43 +192,93 @@ class WP_SKOS_Builder {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * All terms with any semantic relationship to $term, keyed by term_id.
-	 * Excludes parent/child (WP hierarchy) — those are skos:broader/narrower.
+	 * Fetch the raw HT relationship data (inclusions, containers, synonyms, custom
+	 * types) for a term once, so get_related_terms() and get_typed_relations() don't
+	 * each independently re-issue the same HT lookups when both are called for the
+	 * same term (as build_concept() does).
 	 *
 	 * @since 1.0.0
-	 * @return WP_Term[]
+	 * @return array{included: WP_Term[], containers: WP_Term[], synonyms: WP_Term[], custom: array<string, array{forward: WP_Term[], reverse: WP_Term[]}>}
 	 */
-	public static function get_related_terms( WP_Term $term ): array {
+	private static function fetch_relationship_data( WP_Term $term ): array {
+		$data = array(
+			'included'   => array(),
+			'containers' => array(),
+			'synonyms'   => array(),
+			'custom'     => array(),
+		);
+
 		if ( ! function_exists( 'htax_get_included_terms' ) ) {
-			return array();
+			return $data;
 		}
 
-		$related = array();
+		$data['included']   = htax_get_included_terms( $term );
+		$data['containers'] = htax_get_container_terms( $term );
+		$data['synonyms']   = function_exists( 'htax_get_synonym_terms' )
+			? htax_get_synonym_terms( $term )
+			: array();
 
-		// Built-in: inclusions and containers (cross-branch only; HT excludes ancestors/descendants).
-		$included   = htax_get_included_terms( $term );
-		$containers = htax_get_container_terms( $term );
-		foreach ( $included as $t_id => $t ) {
-			$related[ $t_id ] = $t;
-		}
-		foreach ( $containers as $t_id => $t ) {
-			$related[ $t_id ] = $t;
-		}
-
-		// All registered custom types (both directions).
 		if ( function_exists( 'htax_get_registered_relationship_types' ) && function_exists( 'htax_get_related_terms' ) ) {
 			foreach ( htax_get_registered_relationship_types( true ) as $slug => $type ) {
 				if ( $type['is_core'] ?? false ) {
 					continue;
 				}
-				foreach ( htax_get_related_terms( $term->term_id, $slug ) as $t_id => $t ) {
-					$related[ $t_id ] = $t;
-				}
-				if ( function_exists( 'htax_get_reverse_related_terms' ) ) {
-					foreach ( htax_get_reverse_related_terms( $term->term_id, $slug ) as $t_id => $t ) {
-						$related[ $t_id ] = $t;
-					}
-				}
+				$data['custom'][ $slug ] = array(
+					'forward' => htax_get_related_terms( $term->term_id, $slug ),
+					'reverse' => function_exists( 'htax_get_reverse_related_terms' )
+						? htax_get_reverse_related_terms( $term->term_id, $slug )
+						: array(),
+				);
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * All terms with any semantic relationship to $term, keyed by term_id.
+	 * Excludes parent/child (WP hierarchy) — those are skos:broader/narrower.
+	 *
+	 * Hidden HT terms are omitted for unauthorized callers, mirroring the
+	 * skos:broader/narrower hidden-term filtering in build_concept() — otherwise
+	 * a hidden term's existence would leak through skos:related.
+	 *
+	 * @since 1.0.0
+	 * @param bool       $authed   Whether the caller is authorized to see hidden terms.
+	 * @param array|null $rel_data Pre-fetched relationship data from fetch_relationship_data(),
+	 *                             to avoid re-querying HT when the caller already has it
+	 *                             (build_concept() shares one fetch with get_typed_relations()).
+	 * @return WP_Term[]
+	 */
+	public static function get_related_terms( WP_Term $term, bool $authed = false, ?array $rel_data = null ): array {
+		if ( ! function_exists( 'htax_get_included_terms' ) ) {
+			return array();
+		}
+
+		$rel_data ??= self::fetch_relationship_data( $term );
+		$related   = array();
+
+		// Built-in: inclusions and containers (cross-branch only; HT excludes ancestors/descendants).
+		foreach ( $rel_data['included'] as $t_id => $t ) {
+			$related[ $t_id ] = $t;
+		}
+		foreach ( $rel_data['containers'] as $t_id => $t ) {
+			$related[ $t_id ] = $t;
+		}
+
+		// All registered custom types (both directions).
+		foreach ( $rel_data['custom'] as $dirs ) {
+			foreach ( $dirs['forward'] as $t_id => $t ) {
+				$related[ $t_id ] = $t;
+			}
+			foreach ( $dirs['reverse'] as $t_id => $t ) {
+				$related[ $t_id ] = $t;
+			}
+		}
+
+		foreach ( $related as $t_id => $t ) {
+			if ( self::is_hidden_for( $t_id, $authed ) ) {
+				unset( $related[ $t_id ] );
 			}
 		}
 
@@ -247,55 +297,66 @@ class WP_SKOS_Builder {
 	 *     '{custom-slug}_reverse' => [ ... ],          // reverse direction
 	 *   ]
 	 *
+	 * Hidden HT terms are omitted for unauthorized callers, mirroring the
+	 * skos:broader/narrower hidden-term filtering in build_concept() — otherwise
+	 * a hidden term's existence would leak through a wpskos:* sub-property.
+	 *
 	 * @since 1.0.0
+	 * @param bool       $authed   Whether the caller is authorized to see hidden terms.
+	 * @param array|null $rel_data Pre-fetched relationship data; see get_related_terms().
 	 */
-	public static function get_typed_relations( WP_Term $term ): array {
+	public static function get_typed_relations( WP_Term $term, bool $authed = false, ?array $rel_data = null ): array {
 		if ( ! function_exists( 'htax_get_included_terms' ) ) {
 			return array();
 		}
 
-		$typed = array();
+		$rel_data ??= self::fetch_relationship_data( $term );
+		$typed     = array();
 
 		// Synonyms: mutual inclusions. HT exposes a dedicated helper if available.
-		$synonyms = function_exists( 'htax_get_synonym_terms' )
-			? htax_get_synonym_terms( $term )
-			: array();
+		$synonyms = $rel_data['synonyms'];
 		if ( ! empty( $synonyms ) ) {
 			$typed['synonym'] = $synonyms;
 		}
 
 		// Inclusions (A includes B, excluding mutual/synonym pairs).
 		$synonym_ids = array_keys( $synonyms );
-		$included    = htax_get_included_terms( $term );
-		$one_way     = array_filter( $included, fn( $t_id ) => ! in_array( $t_id, $synonym_ids, true ), ARRAY_FILTER_USE_KEY );
+		$one_way     = array_filter( $rel_data['included'], fn( $t_id ) => ! in_array( $t_id, $synonym_ids, true ), ARRAY_FILTER_USE_KEY );
 		if ( ! empty( $one_way ) ) {
 			$typed['includes'] = $one_way;
 		}
 
 		// Containers (reverse direction of one-way inclusions).
-		$containers = htax_get_container_terms( $term );
 		// Exclude containers that are also synonyms.
-		$one_way_containers = array_filter( $containers, fn( $t_id ) => ! in_array( $t_id, $synonym_ids, true ), ARRAY_FILTER_USE_KEY );
+		$one_way_containers = array_filter( $rel_data['containers'], fn( $t_id ) => ! in_array( $t_id, $synonym_ids, true ), ARRAY_FILTER_USE_KEY );
 		if ( ! empty( $one_way_containers ) ) {
 			$typed['container'] = $one_way_containers;
 		}
 
 		// Custom types.
-		if ( function_exists( 'htax_get_registered_relationship_types' ) && function_exists( 'htax_get_related_terms' ) ) {
-			foreach ( htax_get_registered_relationship_types( true ) as $slug => $type ) {
-				if ( $type['is_core'] ?? false ) {
-					continue;
+		foreach ( $rel_data['custom'] as $slug => $dirs ) {
+			$forward = $dirs['forward'];
+			if ( ! empty( $forward ) ) {
+				$typed[ $slug ] = $forward;
+			}
+			$reverse = $dirs['reverse'];
+			if ( ! empty( $reverse ) ) {
+				$typed[ $slug . '_reverse' ] = $reverse;
+			}
+		}
+
+		// Filter out hidden terms per sub-property, dropping any sub-property that
+		// becomes empty as a result (same convention used when building each above).
+		foreach ( $typed as $slug => $terms ) {
+			foreach ( $terms as $t_id => $t ) {
+				if ( self::is_hidden_for( $t_id, $authed ) ) {
+					unset( $terms[ $t_id ] );
 				}
-				$forward = htax_get_related_terms( $term->term_id, $slug );
-				if ( ! empty( $forward ) ) {
-					$typed[ $slug ] = $forward;
-				}
-				if ( function_exists( 'htax_get_reverse_related_terms' ) ) {
-					$reverse = htax_get_reverse_related_terms( $term->term_id, $slug );
-					if ( ! empty( $reverse ) ) {
-						$typed[ $slug . '_reverse' ] = $reverse;
-					}
-				}
+			}
+			if ( empty( $terms ) ) {
+				unset( $typed[ $slug ] );
+			} else {
+				$typed[ $slug ] = $terms;
 			}
 		}
 
@@ -332,7 +393,8 @@ class WP_SKOS_Builder {
 			}
 
 			// Wikidata: document URL uses /wiki/Q…; entity URI for closeMatch is /entity/Q….
-			$is_wikidata = (bool) preg_match( '#^https?://www\.wikidata\.org/wiki/(Q\d+)#', $url, $m );
+			// www. is optional — wikidata.org/wiki/... without the subdomain is equally valid.
+			$is_wikidata = (bool) preg_match( '#^https?://(?:www\.)?wikidata\.org/wiki/(Q\d+)#', $url, $m );
 			$close_match_uri = $is_wikidata
 				? 'http://www.wikidata.org/entity/' . $m[1]
 				: $url;
@@ -541,8 +603,13 @@ class WP_SKOS_Builder {
 			}
 		}
 
+		// Fetch HT relationship data once and share it between get_related_terms()
+		// and get_typed_relations() below, instead of each independently re-querying
+		// the same inclusions/containers/synonyms/custom-type data.
+		$rel_data = function_exists( 'htax_get_included_terms' ) ? self::fetch_relationship_data( $term ) : null;
+
 		// skos:related — union of all HT relationship paths.
-		$related = self::get_related_terms( $term );
+		$related = self::get_related_terms( $term, $authed, $rel_data );
 		if ( ! empty( $related ) ) {
 			$data['skos:related'] = array_values( array_map(
 				fn( $t ) => array( '@id' => self::concept_uri( $t->taxonomy, $t->slug ) ),
@@ -551,7 +618,7 @@ class WP_SKOS_Builder {
 		}
 
 		// Typed sub-properties (wpskos:includes, wpskos:container, wpskos:synonym, custom).
-		$typed = self::get_typed_relations( $term );
+		$typed = self::get_typed_relations( $term, $authed, $rel_data );
 		foreach ( $typed as $slug => $terms ) {
 			$is_reverse = '_reverse' === substr( $slug, -8 );
 			$base_slug  = $is_reverse ? substr( $slug, 0, -8 ) : $slug;
@@ -585,11 +652,14 @@ class WP_SKOS_Builder {
 			foreach ( $close_matches as $cm ) {
 				$data['skos:closeMatch'][] = array( '@id' => $cm['close_match_uri'] );
 				if ( $cm['is_wikidata'] || $cm['see_also_url'] !== $cm['close_match_uri'] ) {
-					$data['rdfs:seeAlso'][] = array(
-						'@id'        => $cm['see_also_url'],
-						'@type'      => 'foaf:Document',
-						'rdfs:label' => $cm['label'],
+					$see_also = array(
+						'@id'   => $cm['see_also_url'],
+						'@type' => 'foaf:Document',
 					);
+					if ( '' !== $cm['label'] ) {
+						$see_also['rdfs:label'] = $cm['label'];
+					}
+					$data['rdfs:seeAlso'][] = $see_also;
 				}
 			}
 			if ( empty( $data['rdfs:seeAlso'] ) ) {
@@ -639,7 +709,10 @@ class WP_SKOS_Builder {
 
 		$term_ids = array();
 		if ( function_exists( 'htax_get_expanded_term_ids' ) ) {
-			$term_ids = htax_get_expanded_term_ids( $term->term_id );
+			// Pass true to also fold in terms that redirect to this one, matching
+			// WP_SKOS_Document_Search::expand_term_ids() — both are documented as
+			// reflecting "the concept's archive," so they must expand identically.
+			$term_ids = htax_get_expanded_term_ids( $term->term_id, true );
 		}
 		if ( empty( $term_ids ) ) {
 			$term_ids = array( $term->term_id );
@@ -656,13 +729,18 @@ class WP_SKOS_Builder {
 		}
 
 		$placeholders = implode( ',', array_fill( 0, count( $term_ids ), '%d' ) );
+		// post_type is restricted to 'post', matching the document-search endpoint's
+		// hardcoded post_type=post — both represent "the concept's archive" and must
+		// reflect the same post set, or dct:modified could reflect edits to posts the
+		// archive and document search don't actually surface.
 		$modified = $wpdb->get_var( $wpdb->prepare(
 			"SELECT MAX( p.post_modified_gmt )
 			 FROM {$wpdb->posts} p
 			 INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = p.ID
 			 INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
 			 WHERE tt.term_id IN ($placeholders)
-			   AND p.post_status = 'publish'",
+			   AND p.post_status = 'publish'
+			   AND p.post_type = 'post'",
 			$term_ids
 		) );
 
@@ -780,15 +858,25 @@ class WP_SKOS_Builder {
 		// (b) Direct member concepts (member_of → this group). Members can live in
 		// any taxonomy, so query without a source-taxonomy filter and resolve each
 		// member's taxonomy from the loaded term.
+		//
+		// This is a direct query against an internal HyperTaxonomy table — the one
+		// documented exception to the function_exists()-guarded integration pattern
+		// (see docs/hypertaxonomy-integration.md). Guarded with SHOW TABLES LIKE,
+		// matching the same exception in class-document-search.php, so a schema
+		// change in HT degrades to "no members" instead of a fatal error.
 		global $wpdb;
 		$table = $wpdb->prefix . 'htax_term_relationships';
-		$member_ids = $wpdb->get_col( $wpdb->prepare(
-			"SELECT source_term_id FROM {$table}
-			 WHERE target_term_id = %d
-			   AND target_taxonomy = 'group'
-			   AND relationship_type = 'member_of'",
-			$group->term_id
-		) );
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) ) {
+			$member_ids = $wpdb->get_col( $wpdb->prepare(
+				"SELECT source_term_id FROM {$table}
+				 WHERE target_term_id = %d
+				   AND target_taxonomy = 'group'
+				   AND relationship_type = 'member_of'",
+				$group->term_id
+			) );
+		} else {
+			$member_ids = array();
+		}
 
 		foreach ( $member_ids as $member_id ) {
 			$member = get_term( (int) $member_id );
