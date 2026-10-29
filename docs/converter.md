@@ -19,13 +19,15 @@ Optional YAML mapping config for custom property URIs and Collection → group s
 ```yaml
 relationships:
   "http://example.org/vocab/relatedTo": "related"
-  "skos:related": ~          # ~ (null) = skip silently instead of reporting as unmapped
+  "http://example.org/vocab/seeAlsoInternal": ~   # ~ (null) = skip silently instead of reporting as unmapped
 
 collections:
   "http://example.org/collections/regions": "regions-group"
 ```
 
-Pass the config with `--mapping mapping.yaml`. Mapping a property to `~` (YAML null) tells the converter to skip it silently — distinct from omitting the key, which reports the property as unmapped in the migration report. Property keys may be written as full URIs or as `skos:` / `owl:` / `rdfs:` / `dct:` CURIEs.
+Pass the config with `--mapping mapping.yaml`. Mapping a custom property to `~` (YAML null) tells the converter to skip it silently — distinct from omitting the key, which reports the property as unmapped in the migration report. Property keys may be written as full URIs or as `skos:` / `owl:` / `rdfs:` / `dct:` CURIEs.
+
+`skos:related` is a special case and is **not** affected by this mapping: it is always reported for manual review (see below) regardless of any entry in `relationships`, because HyperTaxonomy needs a direction decision that cannot be inferred from the symmetric SKOS property. Mapping `skos:related` in the config has no effect.
 
 External identifiers are imported automatically: both `skos:exactMatch` and `skos:closeMatch` on a concept become HyperTaxonomy term links (`term_links`) on the corresponding term.
 

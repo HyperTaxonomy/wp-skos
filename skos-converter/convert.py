@@ -65,6 +65,13 @@ def best_label(graph: Graph, uri: URIRef, lang: str = "en") -> str:
     return labels.get(lang) or labels.get("") or next(iter(labels.values()), str(uri).split("/")[-1])
 
 
+def _strip_quotes(s: str) -> str:
+    """Strip one matching pair of surrounding single/double quotes, if present."""
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in ("'", '"'):
+        return s[1:-1]
+    return s
+
+
 def uri_to_slug(uri: str, used: set) -> str:
     """Generate a unique slug from a URI."""
     fragment = uri.split("/")[-1].split("#")[-1]
@@ -96,6 +103,9 @@ class SKOSConverter:
         self.report_lines: list[str] = []
         self._slug_pool: set          = set()
         self._uri_to_slug: dict       = {}
+        # Populated in convert() once every skos:Concept URI is known; used by
+        # _concept_slug_for() to detect dangling references.
+        self._concept_uris: set       = set()
 
     def _slug_for(self, uri: URIRef) -> str:
         key = str(uri)
@@ -103,11 +113,29 @@ class SKOSConverter:
             self._uri_to_slug[key] = uri_to_slug(key, self._slug_pool)
         return self._uri_to_slug[key]
 
+    def _concept_slug_for(self, uri: URIRef, *, context: str) -> "str | None":
+        """Like _slug_for(), but only for a URI that must resolve to a declared
+        skos:Concept (a broader/relationship/redirect/membership target).
+
+        Returns None and records a dangling-reference warning in the migration
+        report when the URI was never declared `rdf:type skos:Concept` in the
+        source graph — e.g. a partial/incomplete SKOS export — instead of
+        silently minting a slug for a reference the import would never resolve.
+        """
+        key = str(uri)
+        if key not in self._concept_uris:
+            self.report_lines.append(
+                f"DANGLING REFERENCE: {context} refers to undeclared concept {key}"
+            )
+            return None
+        return self._slug_for(uri)
+
     def convert(self) -> dict:
         g = self.g
 
         # Collect all skos:Concept URIs.
         concepts = list(g.subjects(RDF.type, SKOS_NS.Concept))
+        self._concept_uris = set(str(c) for c in concepts)
 
         # First pass: assign slugs.
         for c in concepts:
@@ -117,11 +145,27 @@ class SKOSConverter:
             else:
                 label = best_label(g, c, self.lang)
                 slug  = slugify(label)
-            if slug and slug not in self._slug_pool:
+
+            if not slug:
+                # No notation/label to derive a slug from — fall back to the URI.
+                self._slug_for(c)
+                continue
+
+            if slug not in self._slug_pool:
                 self._slug_pool.add(slug)
                 self._uri_to_slug[str(c)] = slug
             else:
-                self._slug_for(c)  # generate unique slug
+                # Collision with another concept's intended slug: append a numeric
+                # suffix to it (the same collision-handling uri_to_slug() uses for
+                # its own base) instead of discarding the intended slug entirely
+                # and deriving an unrelated one from the URI fragment.
+                base = slug
+                n = 1
+                while slug in self._slug_pool:
+                    slug = f"{base}-{n}"
+                    n += 1
+                self._slug_pool.add(slug)
+                self._uri_to_slug[str(c)] = slug
 
         terms         = []
         relationships = []
@@ -141,7 +185,9 @@ class SKOSConverter:
 
             parent_slug = ""
             for broader in g.objects(c, SKOS_NS.broader):
-                parent_slug = self._slug_for(broader)
+                resolved = self._concept_slug_for(broader, context=f"{slug}'s skos:broader")
+                if resolved is not None:
+                    parent_slug = resolved
                 break  # HT supports one WP parent; use first broader
 
             term = {
@@ -156,11 +202,13 @@ class SKOSConverter:
             if (c, OWL_NS.deprecated, Literal(True)) in g:
                 replaced_by = next(g.objects(c, DCTERMS.isReplacedBy), None)
                 if replaced_by:
-                    redirects.append({
-                        "from": slug,
-                        "to":   self._slug_for(replaced_by),
-                    })
-                    term["deprecated"] = True
+                    to_slug = self._concept_slug_for(replaced_by, context=f"{slug}'s dct:isReplacedBy")
+                    if to_slug is not None:
+                        redirects.append({
+                            "from": slug,
+                            "to":   to_slug,
+                        })
+                        term["deprecated"] = True
 
             # skos:exactMatch → term links.
             for match in g.objects(c, SKOS_NS.exactMatch):
@@ -223,15 +271,18 @@ class SKOSConverter:
 
                 for target in g.objects(c, prop):
                     if isinstance(target, URIRef):
-                        relationships.append({
-                            "from": slug,
-                            "to":   self._slug_for(target),
-                            "type": str(mapped),
-                        })
+                        to_slug = self._concept_slug_for(target, context=f"{slug}'s {prop_curie} relationship")
+                        if to_slug is not None:
+                            relationships.append({
+                                "from": slug,
+                                "to":   to_slug,
+                                "type": str(mapped),
+                            })
 
         # Collections → group memberships.
         group_memberships = []
         collections = list(g.subjects(RDF.type, SKOS_NS.Collection))
+        collection_uris = set(str(coll) for coll in collections)
         for coll in collections:
             coll_str  = str(coll)
             group_slug = self.coll_map.get(coll_str)
@@ -243,9 +294,24 @@ class SKOSConverter:
                 continue
 
             for member in g.objects(coll, SKOS_NS.member):
-                if isinstance(member, URIRef):
+                if not isinstance(member, URIRef):
+                    continue
+                member_str = str(member)
+                if member_str in collection_uris:
+                    # Nested collection: the HT import format only supports flat
+                    # term-to-group membership, with no way to express a
+                    # group-of-groups relationship — flattening it would silently
+                    # mis-import the sub-collection's own members as if they
+                    # belonged directly to this group.
+                    self.report_lines.append(
+                        f"NESTED COLLECTION: {coll_str} contains sub-collection {member_str} — "
+                        "not imported; nested groups must be set up manually in HyperTaxonomy"
+                    )
+                    continue
+                member_slug = self._concept_slug_for(member, context=f"collection {coll_str}'s skos:member")
+                if member_slug is not None:
                     group_memberships.append({
-                        "term":  self._slug_for(member),
+                        "term":  member_slug,
                         "group": str(group_slug),
                     })
 
@@ -302,7 +368,13 @@ def load_mapping(path: str) -> dict:
                     section = "collections"
                 elif section and line.startswith("  "):
                     k, _, v = line.strip().partition(": ")
-                    out[section][k.strip()] = None if v.strip() == "~" else v.strip() or None
+                    # Strip surrounding quotes: the documented example mapping file
+                    # quotes its keys (and may quote values), and without PyYAML the
+                    # quote characters would otherwise become part of the stored key
+                    # so lookups by prop_str/prop_curie would never match.
+                    k = _strip_quotes(k.strip())
+                    v = _strip_quotes(v.strip())
+                    out[section][k] = None if v == "~" else v or None
             return out
     with open(path) as f:
         return yaml.safe_load(f) or {}
