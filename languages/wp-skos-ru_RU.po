@@ -1,0 +1,115 @@
+# Russian translations for wp-skos package
+# Английские переводы для пакета wp-skos.
+# Copyright (C) 2026 THE wp-skos'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the wp-skos package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wp-skos 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-28 14:50-0400\n"
+"PO-Revision-Date: 2026-07-11 23:19-0400\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: includes/class-concept-uri.php:249
+msgid "Not found"
+msgstr "Не найдено"
+
+#: includes/class-document-search.php:66
+msgid ""
+"Peer platform types for external documents (e.g. wordpress, feed). Empty = "
+"all supported."
+msgstr ""
+"Типы платформ сторонних сайтов для внешних документов (например, wordpress, "
+"feed). Пусто — все поддерживаемые."
+
+#: includes/class-document-search.php:72
+msgid "FOAF traversal depth for external documents. 0 = direct peers only."
+msgstr ""
+"Глубина обхода FOAF для внешних документов. 0 — только непосредственно "
+"связанные сторонние сайты."
+
+#: includes/class-document-search.php:88
+msgid "At least one concept URI is required."
+msgstr "Требуется хотя бы один URI понятия."
+
+#: includes/class-settings.php:29 includes/class-settings.php:30
+msgid "WP-SKOS"
+msgstr "WP-SKOS"
+
+#: includes/class-settings.php:46
+msgid "Enabled taxonomies"
+msgstr "Включённые таксономии"
+
+#: includes/class-settings.php:54
+msgid "Default language tag"
+msgstr "Тег языка по умолчанию"
+
+#: includes/class-settings.php:78
+msgid ""
+"Only enabled taxonomies are exposed via the Skosmos API and concept URIs."
+msgstr "Только включённые таксономии доступны через Skosmos API и URI понятий."
+
+#: includes/class-settings.php:92
+msgid ""
+"BCP 47 language tag applied to prefLabel when no multilingual plugin is "
+"active (e.g. <code>en</code>, <code>fr</code>)."
+msgstr ""
+"Тег языка в формате BCP 47 используется для значения prefLabel по умолчанию, "
+"когда не активен ни один плагин многоязычности (например: <code>en</code>, "
+"<code>fr</code>)."
+
+#: includes/class-settings.php:103
+msgid "WP-SKOS Settings"
+msgstr "Настройки WP-SKOS"
+
+#: includes/class-skosmos-api.php:80
+msgid "Unknown vocabulary"
+msgstr "Неизвестный словарь"
+
+#: includes/class-skosmos-api.php:99
+msgid "Unknown endpoint"
+msgstr "Неизвестная конечная точка"
+
+#: includes/class-skosmos-api.php:145
+msgid "Taxonomy not found"
+msgstr "Таксономия не найдена"
+
+#: includes/class-skosmos-api.php:226
+msgid "Missing label parameter"
+msgstr "Отсутствует параметр label"
+
+#: includes/class-skosmos-api.php:269
+msgid "Missing uri parameter"
+msgstr "Отсутствует параметр uri"
+
+#: includes/class-skosmos-api.php:279
+msgid "Scheme not found"
+msgstr "Схема не найдена"
+
+#: includes/class-skosmos-api.php:297 includes/class-skosmos-api.php:304
+msgid "URI not recognized"
+msgstr "URI не распознан"
+
+#: includes/class-skosmos-api.php:311
+msgid "Concept not found"
+msgstr "Понятие не найдено"
+
+#: includes/class-skosmos-api.php:322
+msgid "Concept not found or access denied"
+msgstr "Понятие не найдено или доступ запрещён"
+
+#: includes/class-skosmos-api.php:348
+msgid "Missing query parameter"
+msgstr "Отсутствует параметр query"
+
+#: wp-skos.php:53
+msgid "Settings"
+msgstr "Настройки"

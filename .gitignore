@@ -1,0 +1,79 @@
+# WordPress
+*.log
+.htaccess
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# AI Coding Assistants
+.claude/
+.cursor/
+.windsurf/
+.aider/
+.codeium/
+*.aider.chat.history.md
+.copilot-workspace/
+CLAUDE.md
+# .github/ is committed (workflows, issue templates); only Copilot/AI config is ignored:
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+
+# Build artifacts
+*.zip
+dist/
+release/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.*.swp
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Developer tooling config — commit only the portable packaging script
+phpcs.xml
+utils/*
+!utils/package.sh
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# WordPress Plugin Specific
+*.sql
+*.sql.gz
+*.sql.zip
+*.tar.gz
+
+# Local QA docs (reference the private test sites)
+docs/TEST-PLAN.md
