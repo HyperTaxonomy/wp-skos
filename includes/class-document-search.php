@@ -21,6 +21,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_SKOS_Document_Search {
 
 	/**
+	 * Hard cap on how many matching posts are pulled into PHP and relevance-ranked
+	 * for a single request. Without a cap, a tax_query matching tens of thousands
+	 * of posts would load every matching post ID into memory and build a SQL IN()
+	 * clause of the same size purely to compute pagination — this bounds both.
+	 * `total`/pagination are computed from this same bounded set, so they stay
+	 * internally consistent (every page number the response reports is reachable);
+	 * on a taxonomy with more than this many currently-matching posts, `total`
+	 * undercounts the true match count and the oldest matches are not ranked or
+	 * reachable via pagination.
+	 *
+	 * @since 1.0.0
+	 */
+	private const MAX_CANDIDATES = 5000;
+
+	/**
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
@@ -99,8 +114,11 @@ class WP_SKOS_Document_Search {
 
 		// HyperTaxonomy owns term visibility: drop concepts hidden from the current
 		// user so neither local results nor external documents leak them. Hidden
-		// terms are an HT concept, so this is a no-op when HT is not active.
-		if ( function_exists( 'htax_is_term_hidden' ) ) {
+		// terms are an HT concept, so this is a no-op when HT is not active. Guard
+		// on both functions actually called here, not just the first one — a build
+		// exposing htax_is_term_hidden() without htax_can_see_hidden_terms() would
+		// otherwise fatal instead of gracefully degrading.
+		if ( function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' ) ) {
 			foreach ( $resolved_terms as $uri => $term ) {
 				if ( htax_is_term_hidden( $term->term_id ) && ! htax_can_see_hidden_terms( $term->taxonomy ) ) {
 					unset( $resolved_terms[ $uri ] );
@@ -155,15 +173,15 @@ class WP_SKOS_Document_Search {
 			$tax_query = $tax_groups;
 		}
 
-		// Full candidate post-ID set (no pagination) in date-desc order. This is
-		// the stable secondary order used both for the total and as the fallback
-		// ordering for posts the index does not score.
+		// Candidate post-ID set (bounded by self::MAX_CANDIDATES — see its docblock)
+		// in date-desc order. This is the stable secondary order used both for the
+		// total and as the fallback ordering for posts the index does not score.
 		$candidate_ids = ( new WP_Query( array(
 			'post_type'           => 'post',
 			'post_status'         => 'publish',
 			'tax_query'           => $tax_query,
 			'fields'              => 'ids',
-			'posts_per_page'      => -1,
+			'posts_per_page'      => self::MAX_CANDIDATES,
 			'orderby'             => 'date',
 			'order'               => 'DESC',
 			'ignore_sticky_posts' => true,
@@ -431,6 +449,16 @@ class WP_SKOS_Document_Search {
 	 */
 	private static function build_results( array $posts, array $expanded_per_concept ): array {
 		$results = array();
+
+		// Prime the term cache for every post in one batch, so each wp_get_object_terms()
+		// call below hits a warm cache instead of issuing its own query per post.
+		if ( ! empty( $posts ) ) {
+			update_object_term_cache(
+				wp_list_pluck( $posts, 'ID' ),
+				array_unique( wp_list_pluck( $posts, 'post_type' ) )
+			);
+		}
+
 		foreach ( $posts as $post ) {
 			$post_term_ids = wp_get_object_terms( $post->ID, get_object_taxonomies( $post->post_type ), array( 'fields' => 'ids' ) );
 			$post_term_ids = is_wp_error( $post_term_ids ) ? array() : array_map( 'intval', $post_term_ids );
