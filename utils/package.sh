@@ -8,7 +8,7 @@
 
 set -e
 
-PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -W)"
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN_NAME="wp-skos"
 DIST_DIR="${PLUGIN_ROOT}/dist"
 ZIP_PATH="${DIST_DIR}/${PLUGIN_NAME}.zip"
@@ -18,8 +18,9 @@ echo "Output:      $ZIP_PATH"
 echo ""
 
 # ---------------------------------------------------------------------------
-# Translations: compile .mo from every .po, and (re)generate the block-editor
-# JSON (<domain>-<locale>-<handle>.json) so bundled translations stay in sync.
+# Translations: compile .mo from every .po. WP-SKOS has no block-editor JS
+# (no enqueued scripts call wp_set_script_translations()), so unlike the
+# other plugins in this suite there is no per-locale JSON to regenerate here.
 # Requires GNU gettext (msgfmt). No-op if there are no .po files.
 # ---------------------------------------------------------------------------
 
@@ -27,9 +28,6 @@ echo "Compiling translations..."
 for po in "$PLUGIN_ROOT"/languages/*-*.po; do
     [ -e "$po" ] || continue
     msgfmt "$po" -o "${po%.po}.mo"
-    base="$(basename "$po" .po)"        # e.g. wp-skos-ru_RU
-    locale="${base#${PLUGIN_NAME}-}"    # e.g. ru_RU
-    python "$PLUGIN_ROOT/utils/make-json.py" "$PLUGIN_ROOT" "$PLUGIN_NAME" "$locale"
 done
 echo ""
 

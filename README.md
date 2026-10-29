@@ -106,7 +106,9 @@ A trimmed concept document. Fields appear only when data is present; a standalon
 
 wp-skos is translation-ready and ships with a complete translation template: `languages/wp-skos.pot`.
 
-To contribute a translation: copy the template to `languages/wp-skos-<locale>.po`, translate it, and open a pull request — the build compiles it automatically. See `utils/make-pot.sh`.
+To contribute a translation: copy the template to `languages/wp-skos-<locale>.po`, translate it, and open a pull request — the build compiles it automatically.
+
+To regenerate `languages/wp-skos.pot` after adding or changing translatable strings, run `wp i18n make-pot . languages/wp-skos.pot` from the plugin root (requires [WP-CLI](https://wp-cli.org/)).
 
 ## License
 
