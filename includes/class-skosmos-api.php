@@ -351,7 +351,14 @@ class WP_SKOS_Skosmos_API {
 		// Strip trailing wildcard — WP doesn't need it.
 		$search = rtrim( $query, '*' );
 
-		$taxonomies = $vocab !== '' && WP_SKOS_Settings::is_taxonomy_enabled( $vocab )
+		// An unknown/disabled vocab is an error here, matching dispatch()'s handling
+		// of a bad vocab in the path — it must not silently fall back to searching
+		// every enabled taxonomy instead of the one the caller explicitly asked for.
+		if ( $vocab !== '' && ! WP_SKOS_Settings::is_taxonomy_enabled( $vocab ) ) {
+			self::error( __( 'Unknown vocabulary', 'wp-skos' ), 404 );
+		}
+
+		$taxonomies = $vocab !== ''
 			? array( $vocab )
 			: WP_SKOS_Settings::get_enabled_taxonomies();
 
