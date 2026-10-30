@@ -133,7 +133,7 @@ It is the most recent modification time of any published post in the concept's a
 
 = How are document search results ordered? =
 
-When HyperTaxonomy is active and its search index table exists, results are ordered by descending summed relevance strength from the index over the expanded concept term set; posts absent from the index follow in date order. Without the index, results are ordered by `post_date DESC`. Pagination uses RFC 5988 `Link` headers, and the body also reports `total`, `page`, `per_page`, and `total_pages`.
+When HyperTaxonomy is active and its search index table exists, results are ordered by descending summed relevance strength from the index over the expanded concept term set; posts absent from the index follow. Posts with equal relevance, and posts absent from the index, are listed newest first. Without the index, all results are listed newest first. Pagination uses RFC 5988 `Link` headers, and the body also reports `total`, `page`, `per_page`, and `total_pages`.
 
 = What is `schema:location` and when does it appear? =
 
