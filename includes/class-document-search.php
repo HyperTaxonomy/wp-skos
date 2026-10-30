@@ -158,26 +158,14 @@ class WP_SKOS_Document_Search {
 			$tax_query = $tax_groups;
 		}
 
-		// Full candidate post-ID set (no pagination) in date-desc order. This is
-		// the stable secondary order used both for the total and as the fallback
-		// ordering for posts the index does not score.
-		$candidate_ids = ( new WP_Query( array(
-			'post_type'           => 'post',
-			'post_status'         => 'publish',
-			'tax_query'           => $tax_query,
-			'fields'              => 'ids',
-			'posts_per_page'      => -1,
-			'orderby'             => 'date',
-			'order'               => 'DESC',
-			'ignore_sticky_posts' => true,
-			'no_found_rows'       => true,
-		) ) )->posts;
-		$candidate_ids = array_map( 'intval', (array) $candidate_ids );
-		$total         = count( $candidate_ids );
+		// Count, rank, and paginate in SQL, so the cost of a request does not grow
+		// with the number of matching posts on the PHP side.
+		global $wpdb;
+		$candidate_sql = self::candidate_sql( $tax_query );
+		$total         = (int) $wpdb->get_var( "SELECT COUNT(*) FROM ( {$candidate_sql} ) AS cand" );
 
-		// Order candidates by descending HT relevance strength when the index is
-		// available; otherwise keep date order. The taxonomies of the queried
-		// concepts gate which relationship types count, per their enabled features.
+		// The taxonomies of the queried concepts gate which relationship types count
+		// toward relevance, per their enabled features.
 		$taxonomies  = array();
 		foreach ( $resolved_terms as $term ) {
 			$taxonomies[ $term->taxonomy ] = true;
@@ -188,10 +176,9 @@ class WP_SKOS_Document_Search {
 		foreach ( array_keys( $taxonomies ) as $tax ) {
 			$authed = $authed && htax_can_see_hidden_terms( $tax );
 		}
-		$ordered_ids = self::order_by_relevance( $candidate_ids, $all_expanded_ids, $authed, array_keys( $taxonomies ) );
+		$page_ids = self::ranked_page_ids( $candidate_sql, $all_expanded_ids, $authed, array_keys( $taxonomies ), $per_page, ( $page - 1 ) * $per_page );
 
-		// Paginate the ordered list in PHP, then load posts preserving order.
-		$page_ids = array_slice( $ordered_ids, ( $page - 1 ) * $per_page, $per_page );
+		// Load the page's posts, preserving rank order.
 		$posts    = array();
 		foreach ( $page_ids as $pid ) {
 			$post = get_post( $pid );
@@ -224,35 +211,107 @@ class WP_SKOS_Document_Search {
 	}
 
 	/**
-	 * Order candidate post IDs by descending summed HT relevance strength.
+	 * SQL for the candidate post set: published posts matching the concepts' tax query.
 	 *
-	 * Returns scored posts (highest strength first), followed by any candidate
-	 * IDs absent from the index (implicit score 0) in their original date-desc
-	 * order. Falls back to the candidate order unchanged when HT is inactive or
-	 * the index table is missing.
+	 * WP_Query builds the SQL, so every tax-query filter (including HyperTaxonomy's
+	 * hidden-term handling on parse_tax_query) applies exactly as it does for any
+	 * other query, but the query is not run: the SQL is used as a subquery, so the
+	 * matching IDs are never loaded into PHP. Selects a single `ID` column.
 	 *
 	 * @since 1.0.0
-	 * @param int[]    $candidate_ids Candidate post IDs in date-desc order.
+	 * @param array $tax_query Tax query for the requested concepts.
+	 * @return string
+	 */
+	private static function candidate_sql( array $tax_query ): string {
+		$query      = new WP_Query();
+		$skip_query = static function ( $posts, WP_Query $q ) use ( $query ) {
+			return $q === $query ? array() : $posts;
+		};
+		add_filter( 'posts_pre_query', $skip_query, PHP_INT_MAX, 2 );
+		$query->query( array(
+			'post_type'           => 'post',
+			'post_status'         => 'publish',
+			'tax_query'           => $tax_query,
+			'fields'              => 'ids',
+			'posts_per_page'      => -1,
+			'ignore_sticky_posts' => true,
+			'no_found_rows'       => true,
+			'cache_results'       => false,
+		) );
+		remove_filter( 'posts_pre_query', $skip_query, PHP_INT_MAX );
+
+		return $query->request;
+	}
+
+	/**
+	 * One page of candidate post IDs, ranked by descending summed HT relevance strength.
+	 *
+	 * Scored posts (highest strength first) come before candidates absent from the
+	 * index (implicit score 0). Within equal scores, and for unscored posts, newer
+	 * posts come first, then higher post IDs. Without HyperTaxonomy or its index
+	 * table, every candidate is ordered by that date/ID order alone.
+	 *
+	 * @since 1.0.0
+	 * @param string   $candidate_sql Candidate SQL from candidate_sql().
 	 * @param int[]    $expanded_ids  All expanded term IDs across every concept.
 	 * @param bool     $authed        Whether the user may see hidden terms' rows.
 	 * @param string[] $taxonomies    Taxonomies of the queried concepts (for feature gating).
+	 * @param int      $limit         Page size.
+	 * @param int      $offset        Rows to skip.
 	 * @return int[]
 	 */
-	private static function order_by_relevance( array $candidate_ids, array $expanded_ids, bool $authed, array $taxonomies = array() ): array {
-		if ( empty( $candidate_ids ) || empty( $expanded_ids ) || ! function_exists( 'htax_get_expanded_term_ids' ) ) {
-			return $candidate_ids;
+	private static function ranked_page_ids( string $candidate_sql, array $expanded_ids, bool $authed, array $taxonomies, int $limit, int $offset ): array {
+		global $wpdb;
+
+		$scores_sql = self::scores_sql( $expanded_ids, $authed, $taxonomies );
+		$page_sql   = ' LIMIT ' . absint( $limit ) . ' OFFSET ' . absint( $offset );
+
+		// The candidate SQL is spliced in after prepare() so that any literal '%' it
+		// contains is never read as a placeholder.
+		if ( '' === $scores_sql ) {
+			$sql = "SELECT p.ID
+					FROM ( {$candidate_sql} ) AS cand
+					INNER JOIN {$wpdb->posts} AS p ON p.ID = cand.ID
+					ORDER BY p.post_date DESC, p.ID DESC" . $page_sql;
+		} else {
+			$scores_sql = str_replace( '{candidates}', $candidate_sql, $scores_sql );
+			$sql        = "SELECT p.ID
+					FROM ( {$candidate_sql} ) AS cand
+					INNER JOIN {$wpdb->posts} AS p ON p.ID = cand.ID
+					LEFT JOIN ( {$scores_sql} ) AS s ON s.post_id = p.ID
+					ORDER BY ( s.post_id IS NULL ), s.score DESC, p.post_date DESC, p.ID DESC" . $page_sql;
+		}
+
+		return array_map( 'intval', $wpdb->get_col( $sql ) );
+	}
+
+	/**
+	 * Prepared SQL computing each candidate's summed relevance score from HT's index.
+	 *
+	 * Returns rows of (post_id, score) for candidates with index rows. Contains a
+	 * literal `{candidates}` token for the caller to replace with the candidate SQL.
+	 * Returns '' when HyperTaxonomy or its index table is unavailable.
+	 *
+	 * @since 1.0.0
+	 * @param int[]    $expanded_ids All expanded term IDs across every concept.
+	 * @param bool     $authed       Whether the user may see hidden terms' rows.
+	 * @param string[] $taxonomies   Taxonomies of the queried concepts (for feature gating).
+	 * @return string
+	 */
+	private static function scores_sql( array $expanded_ids, bool $authed, array $taxonomies ): string {
+		if ( empty( $expanded_ids ) || ! function_exists( 'htax_get_expanded_term_ids' ) ) {
+			return '';
 		}
 
 		global $wpdb;
 		$table = $wpdb->prefix . 'htax_search_terms';
 
-		// Cleanly fall back to date order when the index table does not exist.
+		// Fall back to date order when the index table does not exist.
 		if ( ! $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) ) {
-			return $candidate_ids;
+			return '';
 		}
 
 		$term_ph = implode( ',', array_fill( 0, count( $expanded_ids ), '%d' ) );
-		$post_ph = implode( ',', array_fill( 0, count( $candidate_ids ), '%d' ) );
 
 		$hidden_clause = $authed ? '' : ' AND is_hidden = 0';
 
@@ -297,36 +356,12 @@ class WP_SKOS_Document_Search {
 					       1 - EXP(SUM(LN(LEAST(1, GREATEST(1 - strength, 0.000001))))) AS term_score
 					FROM {$table}
 					WHERE term_id IN ($term_ph)
-					  AND post_id IN ($post_ph)$hidden_clause$model_clause$rel_gate
+					  AND post_id IN ( SELECT ID FROM ( {candidates} ) AS cand_scored )$hidden_clause$model_clause$rel_gate
 					GROUP BY post_id, term_id
 				) AS per_term
-				GROUP BY post_id
-				ORDER BY score DESC";
+				GROUP BY post_id";
 
-		$rows = $wpdb->get_results(
-			$wpdb->prepare( $sql, array_merge( $expanded_ids, $candidate_ids, $gate_params ) )
-		);
-
-		if ( empty( $rows ) ) {
-			return $candidate_ids;
-		}
-
-		$scored = array();
-		$seen   = array();
-		foreach ( $rows as $row ) {
-			$pid            = (int) $row->post_id;
-			$scored[]       = $pid;
-			$seen[ $pid ]   = true;
-		}
-
-		// Append candidates absent from the index, preserving date-desc order.
-		foreach ( $candidate_ids as $pid ) {
-			if ( empty( $seen[ $pid ] ) ) {
-				$scored[] = $pid;
-			}
-		}
-
-		return $scored;
+		return $wpdb->prepare( $sql, array_merge( $expanded_ids, $gate_params ) );
 	}
 
 	// -------------------------------------------------------------------------
