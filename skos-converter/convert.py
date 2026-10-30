@@ -254,10 +254,6 @@ class SKOSConverter:
 
                 if mapped is _MISSING:
                     # Check if it's an unmapped custom property (not a built-in SKOS/OWL prop).
-                    # Every property this tuple could exclude already lives in one of the
-                    # six standard namespaces _is_custom_prop() excludes, so it can never
-                    # actually be reached — _is_custom_prop(prop_str) is already False for
-                    # any prop_str that would also match here.
                     if self._is_custom_prop(prop_str):
                         self.report_lines.append(
                             f"UNMAPPED PROPERTY: {prop_str} on term {slug} — add to mapping config to import"
