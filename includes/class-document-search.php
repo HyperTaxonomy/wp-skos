@@ -317,7 +317,10 @@ class WP_SKOS_Document_Search {
 
 		// The index stores strength per scoring model; aggregate only the one
 		// HyperTaxonomy uses for search, or rows would count once per model.
-		$model_clause = htax_strength_model_sql();
+		// Guarded like allowed_rel_types()'s HT call below: a build exposing
+		// htax_get_expanded_term_ids() without htax_strength_model_sql() degrades
+		// to no model filter instead of a fatal error.
+		$model_clause = function_exists( 'htax_strength_model_sql' ) ? htax_strength_model_sql() : '';
 
 		// Gate relationship types per taxonomy by that taxonomy's enabled features —
 		// the same gate HyperTaxonomy applies in its own archive/search scoring, so a

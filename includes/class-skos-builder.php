@@ -826,7 +826,7 @@ class WP_SKOS_Builder {
 			return null;
 		}
 
-		if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $group->term_id ) && ! $authed ) {
+		if ( self::is_hidden_for( $group->term_id, $authed ) ) {
 			return null;
 		}
 
@@ -848,7 +848,7 @@ class WP_SKOS_Builder {
 		) );
 		if ( ! is_wp_error( $child_groups ) ) {
 			foreach ( $child_groups as $child ) {
-				if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $child->term_id ) && ! $authed ) {
+				if ( self::is_hidden_for( $child->term_id, $authed ) ) {
 					continue;
 				}
 				$members[] = array( '@id' => self::collection_uri( $child->slug ) );
@@ -886,7 +886,7 @@ class WP_SKOS_Builder {
 			if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $member->taxonomy ) ) {
 				continue;
 			}
-			if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $member->term_id ) && ! $authed ) {
+			if ( self::is_hidden_for( $member->term_id, $authed ) ) {
 				continue;
 			}
 			$members[] = array( '@id' => self::concept_uri( $member->taxonomy, $member->slug ) );
