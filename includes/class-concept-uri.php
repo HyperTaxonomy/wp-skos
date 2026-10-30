@@ -92,8 +92,12 @@ class WP_SKOS_Concept_URI {
 		}
 
 		// Hidden term check (HT) — mirror build_concept() so the redirect path does
-		// not leak a hidden term's existence to unauthorized clients.
-		if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) && ! current_user_can( 'read_private_posts' ) ) {
+		// not leak a hidden term's existence to unauthorized clients. Uses HT's own
+		// per-taxonomy visibility policy (htax_can_see_hidden_terms()), not a generic
+		// WordPress capability — a site can configure Hidden Terms visibility to any
+		// role/capability it likes, independent of read_private_posts.
+		if ( function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' )
+			&& htax_is_term_hidden( $term->term_id ) && ! htax_can_see_hidden_terms( $taxonomy ) ) {
 			self::not_found();
 		}
 
@@ -106,7 +110,7 @@ class WP_SKOS_Concept_URI {
 			}
 		}
 
-		$authed = current_user_can( 'read_private_posts' );
+		$authed = function_exists( 'htax_can_see_hidden_terms' ) && htax_can_see_hidden_terms( $taxonomy );
 		$cache_key = WP_SKOS_Builder::cache_key_concept( $term->term_id, $authed );
 		$cached    = get_transient( $cache_key );
 
@@ -186,8 +190,20 @@ class WP_SKOS_Concept_URI {
 			self::not_found();
 		}
 
-		$authed = current_user_can( 'read_private_posts' );
-		$data   = WP_SKOS_Builder::build_collection( $group, $authed );
+		// A collection's members can live in any enabled taxonomy (resolved dynamically
+		// inside build_collection(), not known ahead of time), so $authed can only be
+		// correct here if it holds for every enabled taxonomy at once — the conservative
+		// AND-across-taxonomies approach also used for multi-taxonomy document search.
+		$authed = function_exists( 'htax_can_see_hidden_terms' );
+		if ( $authed ) {
+			foreach ( WP_SKOS_Settings::get_enabled_taxonomies() as $tax ) {
+				if ( ! htax_can_see_hidden_terms( $tax ) ) {
+					$authed = false;
+					break;
+				}
+			}
+		}
+		$data = WP_SKOS_Builder::build_collection( $group, $authed );
 		if ( null === $data ) {
 			self::not_found();
 		}

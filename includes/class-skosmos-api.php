@@ -183,10 +183,14 @@ class WP_SKOS_Skosmos_API {
 		}
 
 		// Respect hidden terms, then resolve hasChildren for all visible roots in one
-		// batched query (avoids an N+1 of one children lookup per root).
+		// batched query (avoids an N+1 of one children lookup per root). $vocab is
+		// this taxonomy's own slug, so HT's per-taxonomy visibility policy
+		// (htax_can_see_hidden_terms()) only needs computing once, not per term.
+		$can_see_hidden = function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' )
+			&& htax_can_see_hidden_terms( $vocab );
 		$visible = array();
 		foreach ( $terms as $term ) {
-			if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) && ! current_user_can( 'read_private_posts' ) ) {
+			if ( ! $can_see_hidden && function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) ) {
 				continue;
 			}
 			$visible[] = $term;
@@ -237,9 +241,13 @@ class WP_SKOS_Skosmos_API {
 			$terms = array();
 		}
 
+		// $vocab is this taxonomy's own slug, so HT's per-taxonomy visibility policy
+		// only needs computing once, not per term.
+		$can_see_hidden = function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' )
+			&& htax_can_see_hidden_terms( $vocab );
 		$results = array();
 		foreach ( $terms as $term ) {
-			if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) && ! current_user_can( 'read_private_posts' ) ) {
+			if ( ! $can_see_hidden && function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) ) {
 				continue;
 			}
 			$results[] = array(
@@ -269,7 +277,6 @@ class WP_SKOS_Skosmos_API {
 			self::error( __( 'Missing uri parameter', 'wp-skos' ), 400 );
 		}
 
-		$authed     = current_user_can( 'read_private_posts' );
 		$scheme_uri = WP_SKOS_Builder::scheme_uri( $vocab );
 
 		// ConceptScheme URI.
@@ -311,6 +318,7 @@ class WP_SKOS_Skosmos_API {
 			self::error( __( 'Concept not found', 'wp-skos' ), 404 );
 		}
 
+		$authed    = function_exists( 'htax_can_see_hidden_terms' ) && htax_can_see_hidden_terms( $taxonomy );
 		$cache_key = WP_SKOS_Builder::cache_key_concept( $term->term_id, $authed );
 		$cached    = get_transient( $cache_key );
 		if ( false !== $cached ) {
@@ -376,8 +384,13 @@ class WP_SKOS_Skosmos_API {
 				continue;
 			}
 
+			// $taxonomy is this loop iteration's own taxonomy, so HT's per-taxonomy
+			// visibility policy only needs computing once per taxonomy, not per term.
+			$can_see_hidden = function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' )
+				&& htax_can_see_hidden_terms( $taxonomy );
+
 			foreach ( $terms as $term ) {
-				if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) && ! current_user_can( 'read_private_posts' ) ) {
+				if ( ! $can_see_hidden && function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) ) {
 					continue;
 				}
 				$results[] = array(
@@ -460,7 +473,9 @@ class WP_SKOS_Skosmos_API {
 			$children[ (int) $row->parent ][] = (int) $row->term_id;
 		}
 
-		$apply_hidden = function_exists( 'htax_is_term_hidden' ) && ! current_user_can( 'read_private_posts' );
+		// $vocab is this taxonomy's own slug — use HT's per-taxonomy visibility policy.
+		$apply_hidden = function_exists( 'htax_is_term_hidden' )
+			&& ! ( function_exists( 'htax_can_see_hidden_terms' ) && htax_can_see_hidden_terms( $vocab ) );
 
 		foreach ( $parent_ids as $pid ) {
 			$kids = $children[ $pid ] ?? array();
