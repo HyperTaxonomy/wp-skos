@@ -108,7 +108,7 @@ wp-skos is translation-ready and ships with a complete translation template: `la
 
 To contribute a translation: copy the template to `languages/wp-skos-<locale>.po`, translate it, and open a pull request — the build compiles it automatically.
 
-To regenerate `languages/wp-skos.pot` after adding or changing translatable strings, run `wp i18n make-pot . languages/wp-skos.pot` from the plugin root (requires [WP-CLI](https://wp-cli.org/)).
+To regenerate `languages/wp-skos.pot` after adding or changing translatable strings, run `bash utils/make-pot.sh` from the plugin root (requires GNU gettext), then update translations with `msgmerge --update --backup=none languages/wp-skos-ru_RU.po languages/wp-skos.pot`.
 
 ## License
 

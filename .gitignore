@@ -55,6 +55,7 @@ desktop.ini
 phpcs.xml
 utils/*
 !utils/package.sh
+!utils/make-pot.sh
 
 # Environment files
 .env
