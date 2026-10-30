@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the wp-skos package.
+# This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: wp-skos 1.0.0\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 21:35-0400\n"
+"POT-Creation-Date: 2026-10-30 08:35-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: includes/class-concept-uri.php:252
+#: includes/class-concept-uri.php:268
 msgid "Not found"
 msgstr ""
 
@@ -62,7 +62,7 @@ msgstr ""
 msgid "WP-SKOS Settings"
 msgstr ""
 
-#: includes/class-skosmos-api.php:80 includes/class-skosmos-api.php:358
+#: includes/class-skosmos-api.php:80 includes/class-skosmos-api.php:366
 msgid "Unknown vocabulary"
 msgstr ""
 
@@ -74,31 +74,31 @@ msgstr ""
 msgid "Taxonomy not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:226
+#: includes/class-skosmos-api.php:230
 msgid "Missing label parameter"
 msgstr ""
 
-#: includes/class-skosmos-api.php:269
+#: includes/class-skosmos-api.php:277
 msgid "Missing uri parameter"
 msgstr ""
 
-#: includes/class-skosmos-api.php:279
+#: includes/class-skosmos-api.php:286
 msgid "Scheme not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:297 includes/class-skosmos-api.php:304
+#: includes/class-skosmos-api.php:304 includes/class-skosmos-api.php:311
 msgid "URI not recognized"
 msgstr ""
 
-#: includes/class-skosmos-api.php:311
+#: includes/class-skosmos-api.php:318
 msgid "Concept not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:322
+#: includes/class-skosmos-api.php:330
 msgid "Concept not found or access denied"
 msgstr ""
 
-#: includes/class-skosmos-api.php:348
+#: includes/class-skosmos-api.php:356
 msgid "Missing query parameter"
 msgstr ""
 

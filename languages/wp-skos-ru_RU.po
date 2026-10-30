@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wp-skos 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-29 21:35-0400\n"
+"POT-Creation-Date: 2026-10-30 08:35-0400\n"
 "PO-Revision-Date: 2026-07-11 23:19-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: includes/class-concept-uri.php:252
+#: includes/class-concept-uri.php:268
 msgid "Not found"
 msgstr "Не найдено"
 
@@ -71,7 +71,7 @@ msgstr ""
 msgid "WP-SKOS Settings"
 msgstr "Настройки WP-SKOS"
 
-#: includes/class-skosmos-api.php:80 includes/class-skosmos-api.php:358
+#: includes/class-skosmos-api.php:80 includes/class-skosmos-api.php:366
 msgid "Unknown vocabulary"
 msgstr "Неизвестный словарь"
 
@@ -83,31 +83,31 @@ msgstr "Неизвестная конечная точка"
 msgid "Taxonomy not found"
 msgstr "Таксономия не найдена"
 
-#: includes/class-skosmos-api.php:226
+#: includes/class-skosmos-api.php:230
 msgid "Missing label parameter"
 msgstr "Отсутствует параметр label"
 
-#: includes/class-skosmos-api.php:269
+#: includes/class-skosmos-api.php:277
 msgid "Missing uri parameter"
 msgstr "Отсутствует параметр uri"
 
-#: includes/class-skosmos-api.php:279
+#: includes/class-skosmos-api.php:286
 msgid "Scheme not found"
 msgstr "Схема не найдена"
 
-#: includes/class-skosmos-api.php:297 includes/class-skosmos-api.php:304
+#: includes/class-skosmos-api.php:304 includes/class-skosmos-api.php:311
 msgid "URI not recognized"
 msgstr "URI не распознан"
 
-#: includes/class-skosmos-api.php:311
+#: includes/class-skosmos-api.php:318
 msgid "Concept not found"
 msgstr "Понятие не найдено"
 
-#: includes/class-skosmos-api.php:322
+#: includes/class-skosmos-api.php:330
 msgid "Concept not found or access denied"
 msgstr "Понятие не найдено или доступ запрещён"
 
-#: includes/class-skosmos-api.php:348
+#: includes/class-skosmos-api.php:356
 msgid "Missing query parameter"
 msgstr "Отсутствует параметр query"
 
