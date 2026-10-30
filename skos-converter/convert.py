@@ -62,7 +62,7 @@ def best_label(graph: Graph, uri: URIRef, lang: str = "en") -> str:
     for o in graph.objects(uri, SKOS_NS.prefLabel):
         if isinstance(o, Literal):
             labels[str(o.language or "")] = str(o)
-    return labels.get(lang) or labels.get("") or next(iter(labels.values()), str(uri).split("/")[-1])
+    return labels.get(lang) or labels.get("") or next(iter(labels.values()), str(uri).split("/")[-1].split("#")[-1])
 
 
 def _strip_quotes(s: str) -> str:
@@ -188,7 +188,7 @@ class SKOSConverter:
                 resolved = self._concept_slug_for(broader, context=f"{slug}'s skos:broader")
                 if resolved is not None:
                     parent_slug = resolved
-                break  # HT supports one WP parent; use first broader
+                    break  # HT supports one WP parent; use first broader that resolves
 
             term = {
                 "taxonomy":    self.taxonomy,
@@ -235,9 +235,11 @@ class SKOSConverter:
                 # skos:related — always reported for manual direction decision.
                 if prop in (SKOS_NS.related,):
                     for target in g.objects(c, prop):
-                        self.report_lines.append(
-                            f"SKOS:RELATED (manual direction needed): {slug} ↔ {self._slug_for(target)}"
-                        )
+                        target_slug = self._concept_slug_for(target, context=f"{slug}'s skos:related")
+                        if target_slug is not None:
+                            self.report_lines.append(
+                                f"SKOS:RELATED (manual direction needed): {slug} ↔ {target_slug}"
+                            )
                     continue
 
                 # Custom properties that have a mapping. Use a sentinel so an
@@ -252,18 +254,11 @@ class SKOSConverter:
 
                 if mapped is _MISSING:
                     # Check if it's an unmapped custom property (not a built-in SKOS/OWL prop).
-                    if self._is_custom_prop(prop_str) and prop not in (
-                        SKOS_NS.broader, SKOS_NS.narrower, SKOS_NS.broaderTransitive,
-                        SKOS_NS.narrowerTransitive, SKOS_NS.inScheme, SKOS_NS.topConceptOf,
-                        SKOS_NS.member, SKOS_NS.memberList, SKOS_NS.notation,
-                        SKOS_NS.prefLabel, SKOS_NS.altLabel, SKOS_NS.hiddenLabel,
-                        SKOS_NS.definition, SKOS_NS.scopeNote, SKOS_NS.editorialNote,
-                        SKOS_NS.changeNote, SKOS_NS.historyNote, SKOS_NS.example,
-                        SKOS_NS.exactMatch, SKOS_NS.closeMatch, SKOS_NS.broadMatch,
-                        SKOS_NS.narrowMatch, SKOS_NS.relatedMatch, SKOS_NS.related,
-                        RDF.type, RDFS.label, RDFS.comment, RDFS.seeAlso,
-                        OWL_NS.deprecated, DCTERMS.isReplacedBy,
-                    ):
+                    # Every property this tuple could exclude already lives in one of the
+                    # six standard namespaces _is_custom_prop() excludes, so it can never
+                    # actually be reached — _is_custom_prop(prop_str) is already False for
+                    # any prop_str that would also match here.
+                    if self._is_custom_prop(prop_str):
                         self.report_lines.append(
                             f"UNMAPPED PROPERTY: {prop_str} on term {slug} — add to mapping config to import"
                         )
