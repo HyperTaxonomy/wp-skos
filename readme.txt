@@ -63,11 +63,11 @@ If a term is renamed, its URI changes and callers holding the old URI receive a 
 
 = SKOS → HyperTaxonomy Converter =
 
-A Python script (`skos-converter/convert.py`) is included for one-time vocabulary migrations. It parses a SKOS file (Turtle, RDF/XML, or JSON-LD) and produces a HyperTaxonomy import JSON file plus a migration report.
+A Python script (`skos-converter/convert.py`) is included for one-time vocabulary migrations. It parses a SKOS file (Turtle, RDF/XML, or JSON-LD) and produces a HyperTaxonomy import JSON file, a TermConnect import JSON file for external identifiers, and a migration report.
 
-`python convert.py input.ttl --taxonomy post_tag --output ht-import.json`
+`python convert.py input.ttl --taxonomy category --output ht-import.json`
 
-The report lists every `skos:related` pair that needs a manual inclusion direction decision, every custom property URI without a mapping, and every Collection without a target group slug. A YAML mapping config maps custom property URIs to HyperTaxonomy relationship type slugs and Collection URIs to HyperTaxonomy term group slugs.
+The report lists every `skos:related` pair that needs a manual inclusion direction decision, every custom property URI without a mapping, every Collection without a target group slug, and every identifier matching no link type. A YAML mapping config maps custom property URIs to HyperTaxonomy relationship type slugs, Collection URIs to HyperTaxonomy term group slugs, and URI prefixes to TermConnect link types.
 
 = Why SKOS on WordPress? =
 
@@ -149,7 +149,7 @@ HyperTaxonomy cannot verify mapping quality, and custom link types include encyc
 
 = Can I use the converter for a one-time import into an existing taxonomy? =
 
-Yes. The converter produces a HyperTaxonomy import JSON file that maps SKOS concepts to WP terms, with hierarchy, relationships, external identifiers, redirects, and group memberships. `skos:related` pairs are intentionally not imported because HyperTaxonomy requires a direction decision (A includes B, or B includes A) that cannot be inferred from the symmetric SKOS property alone — these are listed in the migration report for manual review.
+Yes. The converter produces a HyperTaxonomy import JSON file that maps SKOS concepts to WP terms, with hierarchy, relationships, redirects, and group memberships, plus a TermConnect import JSON file with their external identifiers. `skos:related` pairs are intentionally not imported because HyperTaxonomy requires a direction decision (A includes B, or B includes A) that cannot be inferred from the symmetric SKOS property alone — these are listed in the migration report for manual review.
 
 == Screenshots ==
 
