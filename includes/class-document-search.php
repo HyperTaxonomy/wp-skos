@@ -46,16 +46,14 @@ class WP_SKOS_Document_Search {
 					'enum'    => array( 'AND', 'OR' ),
 					'default' => 'OR',
 				),
+				// Out-of-range values are clamped in handle(), not rejected.
 				'page'     => array(
 					'type'    => 'integer',
 					'default' => 1,
-					'minimum' => 1,
 				),
 				'per_page' => array(
 					'type'    => 'integer',
 					'default' => 20,
-					'minimum' => 1,
-					'maximum' => 100,
 				),
 				// External (peer/feed) document scope. Passed opaquely to HyperTaxonomy;
 				// the specific peer topology is intentionally not exposed here.
@@ -112,10 +110,12 @@ class WP_SKOS_Document_Search {
 		}
 
 		if ( empty( $resolved_terms ) ) {
-			return new WP_REST_Response(
+			$response = new WP_REST_Response(
 				self::build_envelope( array(), 0, $page, $per_page ),
 				200
 			);
+			self::add_link_headers( $response, array_map( 'strval', $concept_uris ), $operator, $page, $per_page, 0 );
+			return $response;
 		}
 
 		// Build expanded term IDs per concept URI (preserving which URI → which term IDs).

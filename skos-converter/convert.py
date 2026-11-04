@@ -520,7 +520,8 @@ def load_mapping(path: str) -> dict:
                 elif line == "link_types:":
                     section = "link_types"
                 elif section and line.startswith("  "):
-                    k, _, v = line.strip().partition(": ")
+                    # A key with no value ends in a bare colon, with no ": " to split on.
+                    k, _, v = line.strip().rstrip(":").partition(": ") if line.rstrip().endswith(":") else line.strip().partition(": ")
                     # Strip surrounding quotes: the documented example mapping file
                     # quotes its keys (and may quote values), and without PyYAML the
                     # quote characters would otherwise become part of the stored key

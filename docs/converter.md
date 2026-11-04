@@ -50,7 +50,7 @@ link_types:
   "https://example.com/entry/": "my-link-type"
 ```
 
-**`relationships`** maps a property to a relationship type slug (lowercase letters, digits, and hyphens). A type that doesn't exist yet is created by the import. Mapping a property to `~` tells the converter to skip it silently — distinct from omitting the key, which reports the property as unmapped. Property keys may be written as full URIs or as `skos:` / `owl:` / `rdfs:` / `dct:` CURIEs.
+**`relationships`** maps a property to a relationship type slug (lowercase letters, digits, and hyphens). A type that doesn't exist yet is created by the import. Mapping a property to `~` (or leaving its value blank) tells the converter to skip it silently — distinct from omitting the key, which reports the property as unmapped. Property keys may be written as full URIs or as `skos:` / `owl:` / `rdfs:` / `dct:` CURIEs.
 
 `skos:related` is a special case and is **not** affected by this mapping: it is always reported for manual review, because HyperTaxonomy needs a direction decision (A includes B, or B includes A) that cannot be inferred from the symmetric SKOS property.
 

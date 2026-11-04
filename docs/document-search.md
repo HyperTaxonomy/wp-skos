@@ -15,7 +15,7 @@ GET /wp-json/wp-skos/v1/posts
     &foaf_depth=0               # 0 = direct peers only
 ```
 
-Resolves each concept URI to a WordPress term ID, applies HyperTaxonomy expansion via `htax_get_expanded_term_ids()` (inclusions, hierarchy, group-based expansion) when available, then queries posts and returns them as JSON-LD. Without HyperTaxonomy, expansion falls back to the term plus its WordPress child terms. The query is hardcoded to `post_type=post`; there is no `post_type` parameter. `per_page` defaults to 20 and is capped at 100.
+Resolves each concept URI to a WordPress term ID, applies HyperTaxonomy expansion via `htax_get_expanded_term_ids()` (inclusions, hierarchy, group-based expansion) when available, then queries posts and returns them as JSON-LD. Without HyperTaxonomy, expansion falls back to the term plus its WordPress child terms. The query is hardcoded to `post_type=post`; there is no `post_type` parameter. `per_page` defaults to 20; values outside 1–100 are clamped to that range, and `page` below 1 is treated as 1.
 
 **Response envelope:**
 
