@@ -17,7 +17,7 @@ WP-SKOS calls HyperTaxonomy through function-existence-guarded wrappers. It has 
 | `htax_get_synonym_terms( $term )` | Mutual inclusions → `skos:related` and the `wpskos:synonym` sub-property |
 | `htax_get_related_terms( $term_id, $type )` | Custom relationship types (forward) → `skos:related` and typed sub-properties |
 | `htax_get_reverse_related_terms( $term_id, $type )` | Custom relationship types (reverse) → typed `_reverse` sub-properties |
-| `htax_get_registered_relationship_types( $include_custom )` | Enumerate custom relationship types and read their metadata (label, symmetry, source site) |
+| `htax_get_registered_relationship_types( true )` | Enumerate custom relationship types and read their metadata (label, symmetry, source site) |
 | `htax_get_redirect_target( $term_id )` | Detect redirect terms for `owl:deprecated` + `dct:isReplacedBy` |
 | `htax_get_term_uris( $term_id )` | External URIs → `skos:closeMatch` (TermConnect populates via `htax_term_uris` filter) |
 | `htax_get_term_locations( $term_id )` | Raw location rows → formatted to `schema:Place` objects inside wp-skos (ATCF provides the underlying data) |
