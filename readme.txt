@@ -64,6 +64,8 @@ If a term's slug changes, its URI changes and callers holding the old URI receiv
 
 WP-SKOS generates an `llms.txt` guide and an API catalog (`/.well-known/api-catalog`) from your enabled taxonomies, so AI agents and other API clients can find out how to use your vocabularies. A real `llms.txt` file or another plugin's takes priority at the site root, and the WP-SKOS guide stays available at `/wp-skos/llms.txt`.
 
+Each enabled vocabulary is also available as one JSON-LD file at `/wp-skos/export/{taxonomy}.jsonld`, for building a local index or loading into a triple store.
+
 = SKOS → HyperTaxonomy Converter =
 
 A Python script (`skos-converter/convert.py`) is included for one-time vocabulary migrations. It parses a SKOS file (Turtle, RDF/XML, or JSON-LD) and produces a HyperTaxonomy import JSON file, a TermConnect import JSON file for external identifiers, and a migration report.
@@ -116,7 +118,7 @@ JSON-LD (`application/ld+json`). All other Skosmos API endpoints return Skosmos-
 
 = Can a Skosmos installation load my vocabularies from this plugin? =
 
-No. Skosmos loads its vocabularies from a SPARQL endpoint. WP-SKOS follows the REST API that Skosmos offers, for software written against that API, and doesn't provide a SPARQL endpoint.
+Not directly. Skosmos reads its vocabularies from a SPARQL endpoint, and WP-SKOS doesn't provide one, but you can load each vocabulary's export (`/wp-skos/export/{taxonomy}.jsonld`) into a triple store such as Apache Jena Fuseki and point Skosmos at that. WP-SKOS separately follows the REST API that Skosmos offers, for software written against that API.
 
 = Does this plugin write anything to the database? =
 

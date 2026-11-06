@@ -80,7 +80,7 @@ class WP_SKOS_Agent_Discovery {
 	 * @since 1.0.0
 	 * @return string
 	 */
-	private static function request_path(): string {
+	public static function request_path(): string {
 		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 		$home = rtrim( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ), '/' );
@@ -151,6 +151,10 @@ class WP_SKOS_Agent_Discovery {
 		$site    = self::one_line( get_bloginfo( 'name' ) );
 		$skosmos = home_url( '/' . WPSKOS_SKOSMOS_PREFIX );
 		$posts   = rest_url( 'wp-skos/v1/posts' );
+		$enabled = WP_SKOS_Settings::get_enabled_taxonomies();
+
+		// Link to a real export; dispatch() has already confirmed one taxonomy is enabled.
+		$first_taxonomy = (string) reset( $enabled );
 
 		$lines = array(
 			'# ' . ( '' !== $site ? $site : wp_parse_url( home_url( '/' ), PHP_URL_HOST ) ),
@@ -163,7 +167,7 @@ class WP_SKOS_Agent_Discovery {
 			'',
 		);
 
-		foreach ( WP_SKOS_Settings::get_enabled_taxonomies() as $taxonomy ) {
+		foreach ( $enabled as $taxonomy ) {
 			$tax_obj = get_taxonomy( $taxonomy );
 			if ( ! $tax_obj ) {
 				continue;
@@ -185,6 +189,7 @@ class WP_SKOS_Agent_Discovery {
 				'',
 				'- [List vocabularies](' . $skosmos . '/vocabularies): All enabled vocabularies.',
 				'- [Search concepts](' . $skosmos . '/search?query=example): Label search. Parameters: `query`, optional `vocab`, `lang`, and `maxhits` (default 50, maximum 200).',
+				'- [Export a vocabulary](' . WP_SKOS_Export::url( $first_taxonomy ) . '): Every concept in one vocabulary as a single JSON-LD file, for building a local index. Use `/wp-skos/export/{taxonomy}.jsonld` for the other vocabularies. The file can be large, so prefer search for individual lookups.',
 				'- [Search documents](' . $posts . '): Posts about one or more concepts, ranked by relevance, as JSON-LD. Requires `concept`, a concept URI. Optional parameters: `operator`, `page`, `per_page`.',
 				'',
 				'## Optional',

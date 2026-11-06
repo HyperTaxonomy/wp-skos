@@ -14,7 +14,7 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 - **[Skosmos REST API](skosmos-rest-api.html)** — all endpoints at `/skosmos/rest/v1/`, for software written against Skosmos's API and other SKOS clients.
 - **[Concept URIs](concept-uris.html)** — concept / scheme / collection URIs, content negotiation, OWL property declarations, and the full JSON-LD output gallery.
 - **[Document Search](document-search.html)** — the concept-queryable document search endpoint, relevance ordering, pagination, and external peer-site documents (sourced via HyperTaxonomy).
-- **[AI Agents](ai-agents.html)** — the generated `llms.txt` guide and API catalog that tell agents and other clients how to use your vocabularies.
+- **[AI Agents](ai-agents.html)** — the generated `llms.txt` guide and API catalog that tell agents and other clients how to use your vocabularies, and the whole-vocabulary export.
 - **[HyperTaxonomy Integration](hypertaxonomy-integration.html)** — functions used, feature-flag gates, cache invalidation, and multilingual labels.
 - **[Python Converter](converter.html)** — the SKOS → HyperTaxonomy import converter and its mapping config.
 

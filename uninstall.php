@@ -25,6 +25,7 @@ function wpskos_uninstall_cleanup(): void {
 	$wpdb->query(
 		"DELETE FROM {$wpdb->options}
 		 WHERE option_name LIKE '\_transient\_wpskos\_%'
+		    OR option_name LIKE 'wpskos\_export\_lock\_%'
 		    OR option_name LIKE '\_transient\_timeout\_wpskos\_%'"
 	);
 }

@@ -13,6 +13,7 @@ Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a 
 - Multilingual `skos:prefLabel` via Polylang or WPML
 - Transient cache keyed by term ID + auth state; replaced automatically on term, relationship and visibility changes
 - Generated `llms.txt` guide and RFC 9727 API catalog for AI agents and other API clients
+- Whole-vocabulary JSON-LD export, for local indexes and for loading into a triple store such as Fuseki, from which Skosmos can read
 - Python SKOS → HyperTaxonomy import converter
 
 ## Requirements
