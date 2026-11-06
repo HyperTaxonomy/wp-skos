@@ -60,6 +60,10 @@ Accepts SKOS concept URIs from this site, resolves them to term IDs, applies Hyp
 
 If a term's slug changes, its URI changes and callers holding the old URI receive a 404. Changing only its name doesn't affect the URI. The term's WordPress archive URL is exposed as `rdfs:seeAlso` and is not the authoritative concept URI.
 
+= AI Agents and API Discovery =
+
+WP-SKOS generates an `llms.txt` guide and an API catalog (`/.well-known/api-catalog`) from your enabled taxonomies, so AI agents and other API clients can find out how to use your vocabularies. A real `llms.txt` file or another plugin's takes priority at the site root, and the WP-SKOS guide stays available at `/wp-skos/llms.txt`.
+
 = SKOS → HyperTaxonomy Converter =
 
 A Python script (`skos-converter/convert.py`) is included for one-time vocabulary migrations. It parses a SKOS file (Turtle, RDF/XML, or JSON-LD) and produces a HyperTaxonomy import JSON file, a TermConnect import JSON file for external identifiers, and a migration report.

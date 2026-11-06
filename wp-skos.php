@@ -39,6 +39,7 @@ require_once WPSKOS_DIR . 'includes/class-skos-builder.php';
 require_once WPSKOS_DIR . 'includes/class-skosmos-api.php';
 require_once WPSKOS_DIR . 'includes/class-document-search.php';
 require_once WPSKOS_DIR . 'includes/class-concept-uri.php';
+require_once WPSKOS_DIR . 'includes/class-agent-discovery.php';
 
 add_action( 'plugins_loaded', 'wpskos_init' );
 // Built dynamically (not hardcoded 'wp-skos/wp-skos.php') so the Settings link still
@@ -69,6 +70,7 @@ function wpskos_init(): void {
 	WP_SKOS_Skosmos_API::register();
 	WP_SKOS_Document_Search::register();
 	WP_SKOS_Concept_URI::register();
+	WP_SKOS_Agent_Discovery::register();
 }
 
 /**

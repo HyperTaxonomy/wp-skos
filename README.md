@@ -12,6 +12,7 @@ Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a 
 - HyperTaxonomy integration: `skos:related`, `skos:closeMatch`, `schema:location`, deprecated terms, term groups (`skos:Collection`), hidden term filtering, custom typed sub-properties
 - Multilingual `skos:prefLabel` via Polylang or WPML
 - Transient cache keyed by term ID + auth state; replaced automatically on term, relationship and visibility changes
+- Generated `llms.txt` guide and RFC 9727 API catalog for AI agents and other API clients
 - Python SKOS → HyperTaxonomy import converter
 
 ## Requirements
