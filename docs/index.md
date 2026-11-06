@@ -7,7 +7,7 @@ nav_order: 1
 
 Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a REST API that follows Skosmos's. Integrates with HyperTaxonomy for the full SKOS relationship model.
 
-Part of the [HyperTaxonomy suite](https://hypertaxonomy.org) of interoperable WordPress taxonomy plugins.
+Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable WordPress taxonomy plugins.
 
 ## Documentation map
 
