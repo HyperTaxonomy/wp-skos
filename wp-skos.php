@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP-SKOS
  * Plugin URI:  https://github.com/HyperTaxonomy/wp-skos
- * Description: Exposes WordPress taxonomies as SKOS concept schemes via the Skosmos REST API. Integrates with HyperTaxonomy for full SKOS relationship coverage.
+ * Description: Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a REST API that follows Skosmos's. Integrates with HyperTaxonomy for full SKOS relationship coverage.
  * Version:     1.0.0
  * Author:      Eugene Weinstein
  * Author URI:  https://hypertaxonomy.org

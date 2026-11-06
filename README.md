@@ -1,17 +1,17 @@
 # WP-SKOS
 
-Exposes WordPress taxonomies as SKOS concept schemes via a Skosmos-compatible REST API and stable concept URIs. Integrates with HyperTaxonomy for the full SKOS relationship model.
+Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a REST API that follows Skosmos's. Integrates with HyperTaxonomy for the full SKOS relationship model.
 
 ## Features
 
-- Skosmos REST API at `/skosmos/rest/v1/` — drop-in remote vocabulary support for Skosmos and any SKOS client
-- Stable concept URIs at `/wp-skos/concept/{taxonomy}/{slug}` with content negotiation (JSON-LD or 303 → term archive)
+- REST API at `/skosmos/rest/v1/`, following the one Skosmos offers — for software written against that API and other SKOS clients. A Skosmos installation itself loads vocabularies from a SPARQL endpoint, so it can't use this as a data source
+- Concept URIs at `/wp-skos/concept/{taxonomy}/{slug}` with content negotiation (JSON-LD or 303 → term archive)
 - ConceptScheme URIs at `/wp-skos/scheme/{taxonomy}` and OWL property declarations at `/wp-skos/vocab/{slug}`
 - Collection URIs at `/wp-skos/collection/{group-slug}` — HyperTaxonomy term groups as `skos:Collection`
 - Document search endpoint — accepts concept URIs, returns relevance-ordered JSON-LD `schema:Article` results with `Link` pagination headers
-- HyperTaxonomy integration: `skos:related`, `skos:broaderTransitive` / `skos:narrowerTransitive`, `skos:closeMatch`, `schema:location`, deprecated terms, term groups (`skos:Collection`), hidden term filtering, custom typed sub-properties
+- HyperTaxonomy integration: `skos:related`, `skos:closeMatch`, `schema:location`, deprecated terms, term groups (`skos:Collection`), hidden term filtering, custom typed sub-properties
 - Multilingual `skos:prefLabel` via Polylang or WPML
-- Transient cache keyed by term ID + auth state; auto-invalidated on term save/delete and HyperTaxonomy relationship changes
+- Transient cache keyed by term ID + auth state; replaced automatically on term, relationship and visibility changes
 - Python SKOS → HyperTaxonomy import converter
 
 ## Requirements
@@ -73,14 +73,14 @@ A trimmed concept document. Fields appear only when data is present; a standalon
         { "@value": "Electric Vehicles", "@language": "en" }
       ],
       "skos:notation": "electric-vehicles",
-      "skos:broader":  [{ "@id": "https://example.com/wp-skos/concept/post_tag/transportation" }],
+      "skos:broader":  { "@id": "https://example.com/wp-skos/concept/post_tag/transportation" },
       "skos:narrower": [
         { "@id": "https://example.com/wp-skos/concept/post_tag/battery-ev" }
       ],
       "skos:related": [
         { "@id": "https://example.com/wp-skos/concept/post_tag/charging-infrastructure" }
       ],
-      "wpskos:includes": [
+      "https://hypertaxonomy.org/wp-skos/vocab/includes": [
         { "@id": "https://example.com/wp-skos/concept/post_tag/charging-infrastructure" }
       ],
       "skos:closeMatch": [

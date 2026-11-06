@@ -14,6 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WP_SKOS_Builder {
 
+	/**
+	 * How long concept and scheme documents stay cached, in seconds.
+	 *
+	 * Expiring keeps entries from older generations from piling up, and stops them
+	 * loading on every page, as transients with no expiry do.
+	 */
+	const CACHE_TTL = DAY_IN_SECONDS;
+
 	// -------------------------------------------------------------------------
 	// URIs
 	// -------------------------------------------------------------------------
@@ -64,33 +72,39 @@ class WP_SKOS_Builder {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * The current cache generation, which is part of every cache key.
+	 *
+	 * A concept document also holds its neighbors' URIs and visibility, so one term's
+	 * change can affect many documents. Moving to a new generation retires them all, and
+	 * the old entries expire on their own.
+	 *
+	 * @since 1.0.0
+	 */
+	private static function cache_generation(): int {
+		return (int) get_option( 'wpskos_cache_generation', 1 );
+	}
+
+	/**
 	 * @since 1.0.0
 	 */
 	public static function cache_key_concept( int $term_id, bool $authed ): string {
-		return 'wpskos_cpt_' . $term_id . '_' . ( $authed ? '1' : '0' );
+		return 'wpskos_cpt_' . self::cache_generation() . '_' . $term_id . '_' . ( $authed ? '1' : '0' );
 	}
 
 	/**
 	 * @since 1.0.0
 	 */
 	public static function cache_key_scheme( string $taxonomy ): string {
-		return 'wpskos_sch_' . md5( $taxonomy );
+		return 'wpskos_sch_' . self::cache_generation() . '_' . md5( $taxonomy );
 	}
 
 	/**
+	 * Retire every cached concept and scheme document.
+	 *
 	 * @since 1.0.0
 	 */
-	public static function invalidate_term( int $term_id, string $taxonomy ): void {
-		delete_transient( self::cache_key_concept( $term_id, false ) );
-		delete_transient( self::cache_key_concept( $term_id, true ) );
-		self::invalidate_scheme( $taxonomy );
-	}
-
-	/**
-	 * @since 1.0.0
-	 */
-	public static function invalidate_scheme( string $taxonomy ): void {
-		delete_transient( self::cache_key_scheme( $taxonomy ) );
+	public static function flush_cache(): void {
+		update_option( 'wpskos_cache_generation', self::cache_generation() + 1 );
 	}
 
 	// -------------------------------------------------------------------------
@@ -1054,51 +1068,26 @@ class WP_SKOS_Builder {
 // Cache invalidation hooks
 // -------------------------------------------------------------------------
 
-add_action( 'saved_term',   'wpskos_invalidate_term_cache', 10, 3 );
-add_action( 'delete_term',  'wpskos_invalidate_term_cache', 10, 3 );
-
-/**
- * @since 1.0.0
- */
-function wpskos_invalidate_term_cache( int $term_id, int $tt_id, string $taxonomy ): void {
-	if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $taxonomy ) ) {
-		return;
-	}
-	WP_SKOS_Builder::invalidate_term( $term_id, $taxonomy );
+// Anything that can change a concept document, including a neighbor's. Some of these
+// are HyperTaxonomy's, and only fire when it's active. Anything not covered here, such
+// as a HyperTaxonomy feature flag, is picked up when the cache expires.
+foreach ( array(
+	'saved_term',
+	'delete_term',
+	'update_option_wpskos_settings',
+	'htax_includes_changed',
+	'htax_containers_changed',
+	'htax_relationship_saved',
+	'htax_relationship_deleted',
+	'htax_redirect_changed',
+	'htax_redirect_removed',
+	'htax_term_visibility_changed',
+	'htax_term_uris_changed',
+	'htax_term_locations_changed',
+) as $wpskos_hook ) {
+	add_action( $wpskos_hook, array( 'WP_SKOS_Builder', 'flush_cache' ), 10, 0 );
 }
-
-// HT relationship change invalidation.
-add_action( 'htax_includes_changed', 'wpskos_invalidate_relationship_cache', 10, 2 );
-
-/**
- * @since 1.0.0
- */
-function wpskos_invalidate_relationship_cache( int $term_id, string $taxonomy ): void {
-	WP_SKOS_Builder::invalidate_term( $term_id, $taxonomy );
-}
-
-// HT-relayed external URI change invalidation (TC fires tc_term_uris_changed; HT relays as htax_term_uris_changed).
-add_action( 'htax_term_uris_changed', 'wpskos_invalidate_term_cache_by_id' );
-
-// HT-relayed location change invalidation (ATCF fires atcf_term_location_changed; HT relays as htax_term_locations_changed).
-add_action( 'htax_term_locations_changed', 'wpskos_invalidate_term_cache_by_id' );
-
-/**
- * Invalidate concept transients for a term given only its ID (taxonomy derived automatically).
- * Used by TC and ATCF invalidation hooks which pass term_id without taxonomy.
- *
- * @since 1.0.0
- */
-function wpskos_invalidate_term_cache_by_id( int $term_id ): void {
-	$term = get_term( $term_id );
-	if ( ! ( $term instanceof WP_Term ) ) {
-		return;
-	}
-	if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $term->taxonomy ) ) {
-		return;
-	}
-	WP_SKOS_Builder::invalidate_term( $term_id, $term->taxonomy );
-}
+unset( $wpskos_hook );
 
 // dct:modified is computed live from the archive's most recent post-modified date —
 // see WP_SKOS_Builder::get_modified_date() / inject_modified(). No term meta is stored.

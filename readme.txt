@@ -9,26 +9,25 @@ Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Exposes WordPress taxonomies as SKOS concept schemes via a Skosmos-compatible REST API and stable concept URIs.
+Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a REST API that follows Skosmos's.
 
 == Description ==
 
-WP-SKOS turns any WordPress taxonomy into a machine-readable SKOS vocabulary. It implements the Skosmos REST API so that Skosmos — and any other SKOS-aware tool — can browse, search, and dereference your taxonomies as concept schemes without any configuration on the client side.
+WP-SKOS turns any WordPress taxonomy into a machine-readable SKOS vocabulary. It follows the REST API that Skosmos offers, so software written against that API, and other SKOS-aware tools, can browse, search, and dereference your taxonomies as concept schemes.
 
-Each term becomes an addressable `skos:Concept` at a stable URI (`/wp-skos/concept/{taxonomy}/{slug}`). Each taxonomy becomes a `skos:ConceptScheme` at `/wp-skos/scheme/{taxonomy}`. WordPress's native parent/child hierarchy maps to `skos:broader` / `skos:narrower`. A document search endpoint (`/wp-json/wp-skos/v1/posts`) accepts concept URIs and returns relevance-scored posts as JSON-LD, making the vocabulary queryable by RAG pipelines, AI agents, and any linked data client.
+Each term becomes an addressable `skos:Concept` at its own URI (`/wp-skos/concept/{taxonomy}/{slug}`). Each taxonomy becomes a `skos:ConceptScheme` at `/wp-skos/scheme/{taxonomy}`. WordPress's native parent/child hierarchy maps to `skos:broader` / `skos:narrower`, plus `skos:broaderTransitive` / `skos:narrowerTransitive` listing all ancestors and descendants. A document search endpoint (`/wp-json/wp-skos/v1/posts`) accepts concept URIs and returns relevance-scored posts as JSON-LD, making the vocabulary queryable by RAG pipelines, AI agents, and any linked data client.
 
 **Works standalone.** With only WordPress active, WP-SKOS exposes labels, hierarchy, notations, definitions (plain-text term descriptions map to `skos:definition`; descriptions containing HTML map to `skos:scopeNote`), and top concepts — the full read-only SKOS model for native WP taxonomy data.
 
 **Enhanced with HyperTaxonomy.** When HyperTaxonomy is active, the full SKOS relationship model is populated:
 
 * `skos:Collection` for term groups at `/wp-skos/collection/{group-slug}`, with `skos:member` listing member concepts and nested child-group collections (hidden groups return 404)
-* `skos:broaderTransitive` / `skos:narrowerTransitive` listing all ancestor / descendant concepts
 * `wpskos:includes` / `wpskos:container` / `wpskos:synonym` typed sub-properties for direction-aware clients
 * `owl:deprecated` + `dct:isReplacedBy` for redirect terms
 * `skos:related` for cross-branch inclusions, synonyms, and custom semantic relationship types
 * `skos:closeMatch` for external vocabulary identifiers (Wikidata, GeoNames, LCSH, and any other link type defined in TermConnect)
 * `schema:location` — physical locations as `schema:Place` objects (street address, coordinates) when As the Crow Flies is active
-* Custom relationship types registered in HyperTaxonomy become OWL sub-properties with stable URIs
+* Custom relationship types registered in HyperTaxonomy become OWL sub-properties with their own URIs
 * Hidden term filtering — unauthorized users receive 404 for hidden concepts, mirroring HyperTaxonomy's REST behavior
 
 **Multilingual labels.** When Polylang or WPML is active, translation-linked terms contribute `skos:prefLabel` values in their respective languages.
@@ -59,7 +58,7 @@ Accepts SKOS concept URIs from this site, resolves them to term IDs, applies Hyp
 * `/wp-skos/collection/{group-slug}` — `skos:Collection` for a HyperTaxonomy term group (JSON-LD only; requires HyperTaxonomy)
 * `/wp-skos/vocab/{slug}` — OWL property declaration for built-in and custom relationship types
 
-If a term is renamed, its URI changes and callers holding the old URI receive a 404. The term's WordPress archive URL is exposed as `rdfs:seeAlso` and is not the authoritative concept URI.
+If a term's slug changes, its URI changes and callers holding the old URI receive a 404. Changing only its name doesn't affect the URI. The term's WordPress archive URL is exposed as `rdfs:seeAlso` and is not the authoritative concept URI.
 
 = SKOS → HyperTaxonomy Converter =
 
@@ -71,7 +70,7 @@ The report lists every `skos:related` pair that needs a manual inclusion directi
 
 = Why SKOS on WordPress? =
 
-WordPress powers roughly 43% of the web. Its taxonomy system is already a controlled vocabulary — terms, hierarchy, labels, and descriptions are all there. WP-SKOS adds the standard interface that makes that vocabulary interoperable with the broader knowledge graph ecosystem: Skosmos vocabulary browsers, SKOS-aware applications, and AI tooling that benefits from stable concept URIs, machine-readable semantic relationships, and a concept-queryable document search endpoint.
+WordPress powers roughly 43% of the web. Its taxonomy system is already a controlled vocabulary — terms, hierarchy, labels, and descriptions are all there. WP-SKOS adds the standard interface that makes that vocabulary interoperable with the broader knowledge graph ecosystem: software written for Skosmos's API, SKOS-aware applications, and AI tooling that benefits from addressable concept URIs, machine-readable semantic relationships, and a concept-queryable document search endpoint.
 
 HyperTaxonomy's relationship model — inclusions, synonyms, custom types, external identifiers — maps cleanly onto SKOS because SKOS was designed for exactly this kind of practical vocabulary management. WP-SKOS is the bridge between the two ecosystems.
 
@@ -111,17 +110,17 @@ PyYAML is optional; the converter includes a minimal YAML fallback for mapping c
 
 JSON-LD (`application/ld+json`). All other Skosmos API endpoints return Skosmos-native JSON (`application/json`). Concept and scheme URI handlers also return JSON-LD, with a 303 redirect to the term archive when the request prefers `text/html`.
 
-= How do I point Skosmos at my site? =
+= Can a Skosmos installation load my vocabularies from this plugin? =
 
-In your Skosmos `config.ttl`, declare a vocabulary with `rest:remoteVocab` pointing to `https://yoursite.com/skosmos/rest/v1/{taxonomy-slug}/`. The WP-SKOS endpoints implement the Skosmos REST API format that Skosmos expects for remote vocabularies.
+No. Skosmos loads its vocabularies from a SPARQL endpoint. WP-SKOS follows the REST API that Skosmos offers, for software written against that API, and doesn't provide a SPARQL endpoint.
 
 = Does this plugin write anything to the database? =
 
-No custom tables. It reads from WP core taxonomy tables and HyperTaxonomy tables when present. Concept responses are cached as WordPress transients (keyed by term ID and authentication state) and invalidated automatically when terms change. One option row (`wpskos_settings`) stores the plugin settings. Both the settings option and all transients are deleted automatically when the plugin is uninstalled via the Plugins screen.
+No custom tables. It reads from WP core taxonomy tables and HyperTaxonomy tables when present. Concept responses are cached as WordPress transients for a day (keyed by term ID and authentication state), and replaced automatically when terms or their relationships change. Two option rows store the plugin settings (`wpskos_settings`) and the current cache generation (`wpskos_cache_generation`). Both options and all transients are deleted automatically when the plugin is uninstalled via the Plugins screen.
 
 = What happens to concept URIs when a term is renamed or deleted? =
 
-URIs are based on the term slug. Renaming a term changes its URI; the old URI returns 404. Deleting a term returns 404. WP-SKOS does not mint persistent opaque URIs — slug-based URIs are human-readable and conventional in linked data contexts.
+URIs are based on the term slug. Changing the name alone keeps the URI. Changing the slug changes it, and the old URI returns 404. Deleting a term returns 404. WP-SKOS does not mint persistent opaque URIs — slug-based URIs are human-readable and conventional in linked data contexts.
 
 = What does `skos:related` mean in a WP-SKOS concept document? =
 

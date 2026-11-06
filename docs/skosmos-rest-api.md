@@ -5,6 +5,8 @@ nav_order: 2
 
 # Skosmos REST API
 
+These endpoints follow the REST API that [Skosmos](https://skosmos.org) offers, so software written against that API can read your vocabularies. They don't make your site a data source for a Skosmos installation, which loads its vocabularies from a SPARQL endpoint.
+
 All endpoints are at `/skosmos/rest/v1/`. Only taxonomies enabled in Settings → WP-SKOS are exposed; all others return 404.
 
 ## `GET /vocabularies`

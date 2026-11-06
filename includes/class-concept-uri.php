@@ -128,7 +128,7 @@ class WP_SKOS_Concept_URI {
 			'@graph'   => array( $data ),
 		);
 
-		set_transient( $cache_key, $response, 0 );
+		set_transient( $cache_key, $response, WP_SKOS_Builder::CACHE_TTL );
 		self::jsonld_response( WP_SKOS_Builder::inject_modified( $response, $term ) );
 	}
 
@@ -167,7 +167,7 @@ class WP_SKOS_Concept_URI {
 			'@graph'   => array( $data ),
 		);
 
-		set_transient( $cache_key, $response, 0 );
+		set_transient( $cache_key, $response, WP_SKOS_Builder::CACHE_TTL );
 		self::jsonld_response( $response );
 	}
 

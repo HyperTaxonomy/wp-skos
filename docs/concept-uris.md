@@ -21,7 +21,7 @@ For a **scheme** URI, there is no single public "archive" for an entire taxonomy
 
 ## Taxonomy-qualified URIs
 
-URIs are built from the term's taxonomy and slug: `/wp-skos/concept/{taxonomy}/{slug}`. Renaming a term changes its URI — WP-SKOS does not maintain URI stability across slug changes. The term archive URL (a WordPress permalink) is exposed as `rdfs:seeAlso` and is the appropriate value to present in search results or UI links.
+URIs are built from the term's taxonomy and slug: `/wp-skos/concept/{taxonomy}/{slug}`. Changing a term's name leaves its URI alone, but changing its slug changes the URI, and the old one returns 404. WP-SKOS doesn't keep old URIs working across slug changes. The term archive URL (a WordPress permalink) is exposed as `rdfs:seeAlso` and is the appropriate value to present in search results or UI links.
 
 If a term in vocabulary A has the same slug as a term in vocabulary B, they are distinct concepts with distinct URIs. The taxonomy is part of the concept URI, so each slug always resolves within its own taxonomy and same-slug terms in different taxonomies never collide.
 
@@ -37,7 +37,9 @@ If a term in vocabulary A has the same slug as a term in vocabulary B, they are 
       "@type":        "owl:ObjectProperty",
       "@id":          "https://hypertaxonomy.org/wp-skos/vocab/includes",
       "rdfs:subPropertyOf": { "@id": "http://www.w3.org/2004/02/skos/core#semanticRelation" },
-      "rdfs:label":   "includes"
+      "owl:inverseOf": { "@id": "https://hypertaxonomy.org/wp-skos/vocab/container" },
+      "rdfs:label":   "includes",
+      "rdfs:comment": "HyperTaxonomy inclusion: the subject term's archive incorporates posts tagged with the object term."
     }
   ]
 }
@@ -79,7 +81,7 @@ A fully populated concept document (HyperTaxonomy + TermConnect + ATCF active):
       "skos:related": [
         { "@id": "https://example.com/wp-skos/concept/post_tag/charging-infrastructure" }
       ],
-      "wpskos:includes": [
+      "https://hypertaxonomy.org/wp-skos/vocab/includes": [
         { "@id": "https://example.com/wp-skos/concept/post_tag/charging-infrastructure" }
       ],
       "skos:closeMatch": [
@@ -93,6 +95,7 @@ A fully populated concept document (HyperTaxonomy + TermConnect + ATCF active):
       "_links": {
         "posts": "https://example.com/wp-json/wp-skos/v1/posts?concept=https%3A%2F%2Fexample.com%2Fwp-skos%2Fconcept%2Fpost_tag%2Felectric-vehicles"
       },
+      "dct:modified": "2024-03-15T10:00:00+00:00",
       "schema:location": [
         {
           "@type": "schema:Place",
@@ -117,6 +120,8 @@ A fully populated concept document (HyperTaxonomy + TermConnect + ATCF active):
 }
 ```
 
+Typed relationship properties use the full property URI as the key, because custom types can come from any site. For the built-in types, that's the same property as `wpskos:includes`, `wpskos:container` and `wpskos:synonym`.
+
 Fields appear only when data is present. A standalone WordPress site with no optional plugins produces only `@type`, `@id`, `skos:inScheme`, `skos:prefLabel`, `skos:notation`, optionally `skos:definition` (plain-text descriptions) or `skos:scopeNote` (descriptions containing HTML), `skos:broader`, `skos:narrower`, `skos:broaderTransitive`, `skos:narrowerTransitive`, `_links.posts`, and `rdfs:seeAlso` (term archive URL only).
 
 `skos:broaderTransitive` lists every ancestor and `skos:narrowerTransitive` every descendant — additive to the direct `skos:broader` / `skos:narrower`. Both are omitted when empty.
@@ -126,6 +131,8 @@ Every concept document carries a `_links.posts` discovery key whose value is the
 `dct:modified` is the most recent modification time of any published post in the concept's archive — i.e. `MAX(post_modified)` over the posts assigned to the term, plus its HyperTaxonomy expansion (descendants and inclusions) when HyperTaxonomy is active. It is emitted as ISO 8601 (GMT) and computed live on each request (so it stays current as posts are edited, independent of the concept document cache). The triple is absent when the archive contains no published posts.
 
 ### Redirect (deprecated) concept
+
+A redirect term's document adds these fields to the usual ones, which are left out here:
 
 ```json
 {

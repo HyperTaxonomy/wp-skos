@@ -1,5 +1,5 @@
 title: WP-SKOS
-description: Expose WordPress taxonomies as SKOS linked data via a Skosmos-compatible REST API.
+description: Expose WordPress taxonomies as SKOS linked data through concept URIs and a REST API that follows Skosmos's.
 remote_theme: just-the-docs/just-the-docs
 plugins:
   - jekyll-remote-theme

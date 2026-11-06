@@ -19,8 +19,9 @@ function wpskos_uninstall_cleanup(): void {
 	global $wpdb;
 
 	delete_option( 'wpskos_settings' );
+	delete_option( 'wpskos_cache_generation' );
 
-	// TTL-0 transients never expire, so WP cron won't clean them up automatically.
+	// Remove cached documents now, without waiting for them to expire.
 	$wpdb->query(
 		"DELETE FROM {$wpdb->options}
 		 WHERE option_name LIKE '\_transient\_wpskos\_%'
