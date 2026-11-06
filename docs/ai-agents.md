@@ -21,7 +21,7 @@ Both list only taxonomies you've enabled, plus URL patterns and links. They don'
 
 `/wp-skos/export/{taxonomy}.jsonld` returns one enabled vocabulary as a single JSON-LD file: its concept scheme and every concept the visitor is allowed to see. It's useful for building a local index. For individual lookups, search is much lighter.
 
-The first export after a term changes can take minutes on a large vocabulary, because it builds each concept's document; later exports reuse them and take seconds. Only one export of a vocabulary runs at a time, and a second request meanwhile gets `503` with a `Retry-After` header. If a server stops a long export partway, requesting it again continues from the concepts already built. See [Exporting to a triple store](skosmos-rest-api.html#exporting-to-a-triple-store) for loading the file into other tools.
+Each export builds every concept's document and writes nothing to the database. A vocabulary of about 750 terms took about 12 seconds in testing. Only one export of a vocabulary runs at a time, and a second request meanwhile gets `503` with a `Retry-After` header. See [Exporting to a triple store](skosmos-rest-api.html#exporting-to-a-triple-store) for loading the file into other tools.
 
 ## If you already have an llms.txt
 
@@ -35,7 +35,7 @@ These locations are defined relative to the domain root. On a site installed in 
 |---|---|
 | `wpskos_llms_txt` | Change the generated guide's text. |
 | `wpskos_serve_root_llms_txt` | Return `false` to stop serving `/llms.txt`, leaving only `/wp-skos/llms.txt`. |
-| `wpskos_allow_export` | Return `false` to turn off the whole-vocabulary export, for all taxonomies or for one. The first export after a change has to build many concept documents, so this may suit a very large taxonomy on modest hosting. |
+| `wpskos_allow_export` | Return `false` to turn off the whole-vocabulary export, for all taxonomies or for one. This may suit a very large taxonomy on modest hosting. |
 
 ```php
 add_filter( 'wpskos_llms_txt', function ( $guide ) {

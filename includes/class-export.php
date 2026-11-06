@@ -60,8 +60,8 @@ class WP_SKOS_Export {
 		/**
 		 * Filters whether a vocabulary can be exported as one file.
 		 *
-		 * The first export after a change has to build many concept documents, so a site with a
-		 * very large taxonomy on modest hosting may prefer to turn this off.
+		 * Each export builds every concept document, so a site with a very large taxonomy on
+		 * modest hosting may prefer to turn this off.
 		 *
 		 * @since 1.0.0
 		 * @param bool   $allow    Whether to serve the export. Default true.
@@ -73,8 +73,8 @@ class WP_SKOS_Export {
 
 		$is_head = isset( $_SERVER['REQUEST_METHOD'] ) && 'HEAD' === $_SERVER['REQUEST_METHOD'];
 
-		// An export after a change can take minutes, so run one per taxonomy at a time, or
-		// repeated requests could tie up every PHP worker.
+		// Run one export per taxonomy at a time, or repeated requests to this public URL
+		// could tie up every PHP worker.
 		if ( ! $is_head && ! self::acquire_lock( $taxonomy ) ) {
 			status_header( 503 );
 			header( 'Retry-After: 60' );
@@ -181,7 +181,11 @@ class WP_SKOS_Export {
 	}
 
 	/**
-	 * A term's concept node, through the same cache and visibility rules as its concept URI.
+	 * A term's concept node, under the same visibility rules as its concept URI.
+	 *
+	 * Doesn't use the concept cache: building a document is fast, while writing one cached
+	 * document per term is what would make a full export slow, and would add thousands of
+	 * rows to the options table.
 	 *
 	 * @since 1.0.0
 	 * @param WP_Term $term   Term.
@@ -189,22 +193,12 @@ class WP_SKOS_Export {
 	 * @return array|null Null when the viewer can't see the term.
 	 */
 	private static function concept( WP_Term $term, bool $authed ): ?array {
-		$cache_key = WP_SKOS_Builder::cache_key_concept( $term->term_id, $authed );
-		$response  = get_transient( $cache_key );
-
-		if ( false === $response ) {
-			$data = WP_SKOS_Builder::build_concept( $term, $authed );
-			if ( null === $data ) {
-				return null;
-			}
-			$response = array(
-				'@context' => WP_SKOS_Builder::jsonld_context(),
-				'@graph'   => array( $data ),
-			);
-			set_transient( $cache_key, $response, WP_SKOS_Builder::CACHE_TTL );
+		$data = WP_SKOS_Builder::build_concept( $term, $authed );
+		if ( null === $data ) {
+			return null;
 		}
 
-		$response = WP_SKOS_Builder::inject_modified( $response, $term );
+		$response = WP_SKOS_Builder::inject_modified( array( '@graph' => array( $data ) ), $term );
 
 		return $response['@graph'][0] ?? null;
 	}
