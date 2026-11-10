@@ -1,9 +1,43 @@
 ---
-title: Concept URIs
-nav_order: 3
+title: Concepts & Data Model
+nav_order: 2
 ---
 
-# Concept URIs
+# Concepts & Data Model
+
+## Data model
+
+| WordPress | SKOS |
+|---|---|
+| Taxonomy | `skos:ConceptScheme` at `/wp-skos/scheme/{taxonomy}` |
+| Term | `skos:Concept` at `/wp-skos/concept/{taxonomy}/{slug}` |
+| Term name | `skos:prefLabel` |
+| Term description (plain text) | `skos:definition` |
+| Term description (contains HTML) | `skos:scopeNote` |
+| Term slug | `skos:notation` |
+| Parent term | `skos:broader` |
+| Child terms | `skos:narrower` |
+| All ancestor terms | `skos:broaderTransitive` |
+| All descendant terms | `skos:narrowerTransitive` |
+| HyperTaxonomy inclusion / synonym / custom rel | `skos:related` (+ typed sub-property) |
+| HyperTaxonomy redirect | `owl:deprecated` + `dct:isReplacedBy` |
+| HyperTaxonomy term group | `skos:Collection` at `/wp-skos/collection/{group-slug}` |
+| Most recent post-modified time in the concept's archive | `dct:modified` |
+| TermConnect external URI | `skos:closeMatch` |
+| ATCF location row | `schema:location` → `schema:Place` |
+| Term archive URL | `rdfs:seeAlso` |
+
+HyperTaxonomy relationship types that produce `skos:related` also produce a typed sub-property:
+
+| Relationship type | Sub-property URI |
+|---|---|
+| `includes` | `https://hypertaxonomy.org/wp-skos/vocab/includes` |
+| `member_of` (container) | `https://hypertaxonomy.org/wp-skos/vocab/container` |
+| Synonym relationship | `https://hypertaxonomy.org/wp-skos/vocab/synonym` |
+| Custom slug | `{site}/wp-skos/vocab/{slug}` |
+| Custom slug, reverse direction | `{site}/wp-skos/vocab/{slug}_reverse` |
+
+For custom types, `{site}` is this site, or the site a type was synced from through TermConnect. Built-in type URIs use the `https://hypertaxonomy.org/wp-skos/vocab/` namespace so they are consistent across sites.
 
 ## Content negotiation
 
@@ -49,7 +83,7 @@ If a term in vocabulary A has the same slug as a term in vocabulary B, they are 
 
 ### Concept document
 
-A fully populated concept document (HyperTaxonomy + TermConnect + ATCF active):
+A fully populated concept document (HyperTaxonomy + TermConnect + ATCF active). Fields appear only when data is present, so a site with WP-SKOS alone produces a much smaller document:
 
 ```json
 {

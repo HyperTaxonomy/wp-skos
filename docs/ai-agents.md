@@ -1,9 +1,9 @@
 ---
-title: AI Agents
-nav_order: 5
+title: AI Agents & Export
+nav_order: 4
 ---
 
-# AI agents and API discovery
+# AI agents and export
 
 WP-SKOS tells AI agents and other API clients how to use your vocabularies, with no setup. It generates two documents from the taxonomies enabled in **Settings → WP-SKOS**:
 
@@ -21,7 +21,50 @@ Both list only taxonomies you've enabled, plus URL patterns and links. They don'
 
 `/wp-skos/export/{taxonomy}.jsonld` returns one enabled vocabulary as a single JSON-LD file: its concept scheme and every concept the visitor is allowed to see. It's useful for building a local index. For individual lookups, search is much lighter.
 
-Each export builds every concept's document and writes nothing to the database. A vocabulary of about 750 terms took about 12 seconds in testing. Only one export of a vocabulary runs at a time, and a second request meanwhile gets `503` with a `Retry-After` header. See [Exporting to a triple store](skosmos-rest-api.html#exporting-to-a-triple-store) for loading the file into other tools.
+Each export builds every concept's document and writes nothing to the database. A vocabulary of about 750 terms took about 12 seconds in testing. Only one export of a vocabulary runs at a time, and a second request meanwhile gets `503` with a `Retry-After` header. See [Exporting to a triple store](#exporting-to-a-triple-store) below for loading the file into other tools.
+
+## Exporting to a triple store
+
+Each enabled vocabulary is available as one JSON-LD file:
+
+```
+GET /wp-skos/export/{taxonomy}.jsonld
+```
+
+The file holds the concept scheme and every concept visible to the requester, so request it without logging in to leave hidden terms out. It's standard RDF, so it can be loaded into a triple store and used by anything that reads one, including a Skosmos installation.
+
+{: .note }
+> The file has been checked with an RDF parser, but this route hasn't yet been tested against a live Skosmos installation. The Skosmos and Fuseki settings below are a starting point, so check them against the documentation for your versions.
+
+**1. Load the file into Apache Jena Fuseki**, using one named graph per vocabulary:
+
+```bash
+curl -o post_tag.jsonld https://example.com/wp-skos/export/post_tag.jsonld
+
+curl -X PUT -H "Content-Type: application/ld+json" \
+  --data-binary @post_tag.jsonld \
+  "http://localhost:3030/skosmos/data?graph=https://example.com/wp-skos/scheme/post_tag"
+```
+
+**2. Add the vocabulary to Skosmos's `config.ttl`:**
+
+```turtle
+:post_tag a skosmos:Vocabulary, void:Dataset ;
+    dc:title "Tags"@en ;
+    skosmos:shortName "Tags" ;
+    skosmos:language "en" ;
+    skosmos:defaultLanguage "en" ;
+    skosmos:showTopConcepts "true" ;
+    void:uriSpace "https://example.com/wp-skos/concept/post_tag/" ;
+    skosmos:mainConceptScheme <https://example.com/wp-skos/scheme/post_tag> ;
+    skosmos:sparqlGraph <https://example.com/wp-skos/scheme/post_tag> ;
+    void:dataDump <https://example.com/wp-skos/export/post_tag.jsonld> ;
+    void:sparqlEndpoint <http://localhost:3030/skosmos/sparql> .
+```
+
+**3. Repeat step 1 on a schedule** to pick up changes, since the triple store holds a copy. Concept URIs in the copy still point at your site.
+
+Term groups (`skos:Collection`) aren't part of the export, because a group can span taxonomies. They remain available at their own URIs.
 
 ## If you already have an llms.txt
 
