@@ -1,10 +1,10 @@
 ---
-title: Database Schema
+title: Data Storage
 parent: Architecture
 nav_order: 4
 ---
 
-# Database Schema
+# Data Storage
 
 WP-SKOS has no tables and writes no term or post meta. It stores its settings and caches in options and transients. Deleting the plugin removes all of them.
 

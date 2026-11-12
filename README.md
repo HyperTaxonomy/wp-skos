@@ -104,7 +104,7 @@ A trimmed concept document. Fields appear only when data is present; a standalon
 - **[Skosmos REST API](docs/skosmos-rest-api.md)** — all endpoints at `/skosmos/rest/v1/`.
 - **[HyperTaxonomy Integration](docs/hypertaxonomy-integration.md)** — functions used, feature-flag gates, cache invalidation, and multilingual labels.
 - **[Python Converter](docs/converter.md)** — the SKOS → HyperTaxonomy import converter and its mapping config.
-- **[Architecture](docs/architecture/index.md)** — file structure and loading, function and hook references, and the database schema. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
+- **[Architecture](docs/architecture/index.md)** — file structure and loading, function and hook references, and data storage. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
 
 ## Translations
 

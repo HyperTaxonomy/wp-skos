@@ -13,4 +13,4 @@ The Function Reference and Hook Reference are generated from the code and its do
 - **[File Structure & Loading](file-structure.html)** — the directory layout and the order files load in.
 - **[Function Reference](function-reference.html)** — every function and public method, by file.
 - **[Hook Reference](hook-reference.html)** — the callbacks WP-SKOS registers, and the hooks it fires.
-- **[Database Schema](database-schema.html)** — options and transients; WP-SKOS has no tables.
+- **[Data Storage](data-storage.html)** — options and transients; WP-SKOS has no tables.
