@@ -23,6 +23,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_SKOS_Skosmos_API {
 
 	/**
+	 * Hook the API's rewrite rule, query var and request handler.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
@@ -32,6 +34,8 @@ class WP_SKOS_Skosmos_API {
 	}
 
 	/**
+	 * Route /skosmos/rest/v1/ requests to the API handler.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function add_rewrite_rules(): void {
@@ -40,6 +44,8 @@ class WP_SKOS_Skosmos_API {
 	}
 
 	/**
+	 * Register the query var that holds the API path.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function add_query_vars( array $vars ): array {

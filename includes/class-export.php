@@ -25,6 +25,8 @@ class WP_SKOS_Export {
 	const LOCK_TTL = 600;
 
 	/**
+	 * Hook the export handler.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register(): void {

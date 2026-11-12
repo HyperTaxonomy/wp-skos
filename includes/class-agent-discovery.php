@@ -27,6 +27,8 @@ class WP_SKOS_Agent_Discovery {
 	const DOCS_URL          = 'https://hypertaxonomy.org/wp-skos/';
 
 	/**
+	 * Hook the llms.txt and API catalog handler.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register(): void {

@@ -4,7 +4,7 @@ Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a 
 
 ## Features
 
-- REST API at `/skosmos/rest/v1/`, following the one Skosmos offers — for software written against that API and other SKOS clients. A Skosmos installation itself loads vocabularies from a SPARQL endpoint, so it can't use this as a data source
+- REST API at `/skosmos/rest/v1/`, following the one Skosmos offers — for software written against that API and other SKOS clients. A Skosmos installation itself loads vocabularies from a SPARQL endpoint; to use one, load the whole-vocabulary export into a triple store.
 - Concept URIs at `/wp-skos/concept/{taxonomy}/{slug}` with content negotiation (JSON-LD or 303 → term archive)
 - ConceptScheme URIs at `/wp-skos/scheme/{taxonomy}` and OWL property declarations at `/wp-skos/vocab/{slug}`
 - Collection URIs at `/wp-skos/collection/{group-slug}` — HyperTaxonomy term groups as `skos:Collection`
@@ -55,7 +55,7 @@ For the full data model — including the typed sub-property URIs — see the [d
 
 ## Concept example
 
-A trimmed concept document. Fields appear only when data is present; a standalone WordPress site produces a smaller document. See the [Concept URIs](docs/concept-uris.md) page for the complete output gallery.
+A trimmed concept document. Fields appear only when data is present; a standalone WordPress site produces a smaller document. See the [Concepts & Data Model](docs/concept-uris.md) page for the complete output gallery.
 
 ```json
 {
@@ -98,11 +98,13 @@ A trimmed concept document. Fields appear only when data is present; a standalon
 
 ## Documentation
 
-- **[Skosmos REST API](docs/skosmos-rest-api.md)** — all endpoints at `/skosmos/rest/v1/`.
-- **[Concept URIs](docs/concept-uris.md)** — concept / scheme / collection URIs, content negotiation, OWL property declarations, and the full JSON-LD output gallery.
+- **[Concepts & Data Model](docs/concept-uris.md)** — how terms and taxonomies map to SKOS; concept, scheme and collection URIs; content negotiation; OWL property declarations; and the full JSON-LD output gallery.
 - **[Document Search](docs/document-search.md)** — the document-search endpoint, relevance ordering, pagination, and the external-documents filter.
+- **[AI Agents & Export](docs/ai-agents.md)** — the generated `llms.txt` guide and API catalog, the whole-vocabulary export, and loading it into a triple store.
+- **[Skosmos REST API](docs/skosmos-rest-api.md)** — all endpoints at `/skosmos/rest/v1/`.
 - **[HyperTaxonomy Integration](docs/hypertaxonomy-integration.md)** — functions used, feature-flag gates, cache invalidation, and multilingual labels.
 - **[Python Converter](docs/converter.md)** — the SKOS → HyperTaxonomy import converter and its mapping config.
+- **[Architecture](docs/architecture/index.md)** — file structure and loading, function and hook references, and the database schema. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
 
 ## Translations
 

@@ -39,6 +39,10 @@ HyperTaxonomy relationship types that produce `skos:related` also produce a type
 
 For custom types, `{site}` is this site, or the site a type was synced from through TermConnect. Built-in type URIs use the `https://hypertaxonomy.org/wp-skos/vocab/` namespace so they are consistent across sites.
 
+**`skos:related` covers every HyperTaxonomy relationship, in both directions:** cross-branch inclusions, containers, synonyms and custom types. The typed sub-properties above say which relationship it is and which way it points. A client that understands only `skos:related` reads them all as undirected associations.
+
+**External identifiers use `skos:closeMatch`, not `skos:exactMatch`,** because WP-SKOS can't verify how precise a mapping is. Link types range from encyclopedias to authority files, so `skos:closeMatch` makes the safer claim: close, but not necessarily exact.
+
 ## Content negotiation
 
 `GET /wp-skos/concept/{taxonomy}/{slug}` and `GET /wp-skos/scheme/{taxonomy}` inspect the `Accept` header:

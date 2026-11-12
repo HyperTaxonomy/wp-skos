@@ -27,6 +27,8 @@ class WP_SKOS_Builder {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * URI of a term's concept.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function concept_uri( string $taxonomy, string $term_slug ): string {
@@ -34,6 +36,8 @@ class WP_SKOS_Builder {
 	}
 
 	/**
+	 * URI of a taxonomy's concept scheme.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function scheme_uri( string $taxonomy ): string {
@@ -85,6 +89,8 @@ class WP_SKOS_Builder {
 	}
 
 	/**
+	 * Transient key for a cached concept document, separate for viewers who can see hidden terms.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function cache_key_concept( int $term_id, bool $authed ): string {
@@ -92,6 +98,8 @@ class WP_SKOS_Builder {
 	}
 
 	/**
+	 * Transient key for a cached scheme document.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function cache_key_scheme( string $taxonomy ): string {

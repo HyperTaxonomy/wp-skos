@@ -14,6 +14,8 @@ class WP_SKOS_Settings {
 	const OPTION = 'wpskos_settings';
 
 	/**
+	 * Hook the settings page and its settings.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
@@ -22,6 +24,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Add Settings → WP-SKOS.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function add_menu(): void {
@@ -35,6 +39,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Register the settings and their fields.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register_settings(): void {
@@ -59,6 +65,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Render the enabled taxonomies checkboxes.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function field_enabled_taxonomies(): void {
@@ -79,6 +87,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Render the default language field.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function field_default_language(): void {
@@ -95,6 +105,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Render the settings page.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function render_page(): void {
@@ -113,6 +125,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Sanitize the saved settings.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function sanitize( $raw ): array {
@@ -137,6 +151,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Taxonomies exposed as SKOS vocabularies.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function get_enabled_taxonomies(): array {
@@ -145,6 +161,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Language tag for labels when no multilingual plugin is active.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function get_default_language(): string {
@@ -153,6 +171,8 @@ class WP_SKOS_Settings {
 	}
 
 	/**
+	 * Whether a taxonomy is exposed as a SKOS vocabulary.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function is_taxonomy_enabled( string $taxonomy ): bool {

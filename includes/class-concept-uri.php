@@ -16,6 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_SKOS_Concept_URI {
 
 	/**
+	 * Hook the URI rewrite rules, query vars and request handler.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
@@ -25,6 +27,8 @@ class WP_SKOS_Concept_URI {
 	}
 
 	/**
+	 * Add rewrite rules for concept, collection, scheme and vocabulary property URIs.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function add_rewrite_rules(): void {
@@ -35,6 +39,8 @@ class WP_SKOS_Concept_URI {
 	}
 
 	/**
+	 * Register the query vars those rewrite rules set.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function add_query_vars( array $vars ): array {
@@ -47,6 +53,8 @@ class WP_SKOS_Concept_URI {
 	}
 
 	/**
+	 * Serve the concept, collection, scheme or property document the request asks for.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function dispatch(): void {

@@ -21,6 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WP_SKOS_Document_Search {
 
 	/**
+	 * Hook the REST route registration.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
@@ -28,6 +30,8 @@ class WP_SKOS_Document_Search {
 	}
 
 	/**
+	 * Register GET /wp-skos/v1/posts.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function register_route(): void {
@@ -74,6 +78,8 @@ class WP_SKOS_Document_Search {
 	}
 
 	/**
+	 * Run a document search and return the matching posts.
+	 *
 	 * @since 1.0.0
 	 */
 	public static function handle( WP_REST_Request $request ): WP_REST_Response {

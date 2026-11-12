@@ -1,0 +1,30 @@
+---
+title: Database Schema
+parent: Architecture
+nav_order: 4
+---
+
+# Database Schema
+
+WP-SKOS has no tables and writes no term or post meta. It stores its settings and caches in options and transients. Deleting the plugin removes all of them.
+
+## Options
+
+| Option | Value |
+|---|---|
+| `wpskos_settings` | `enabled_taxonomies` (the taxonomies exposed as vocabularies) and `default_language` (the language tag for labels when no multilingual plugin is active). |
+| `wpskos_cache_generation` | A number that's part of every cache key. Raising it retires all cached documents at once, because one term's change can affect many documents. |
+| `wpskos_export_lock_{md5(taxonomy)}` | Present while an export of that vocabulary is running, so only one runs at a time. Removed when the request ends, and treated as abandoned after 10 minutes. |
+
+## Transients
+
+| Key | Holds |
+|---|---|
+| `wpskos_cpt_{generation}_{term_id}_{0 or 1}` | A concept document. The last part is 1 for viewers who can see hidden terms. |
+| `wpskos_sch_{generation}_{md5(taxonomy)}` | A concept scheme document. |
+
+Both last one day.
+
+## Meta that WP-SKOS reads
+
+`_lang` term meta, when a multilingual plugin stores a term's language there, sets the language of the term's labels.

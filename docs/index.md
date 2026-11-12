@@ -20,6 +20,7 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 - **[Skosmos REST API](skosmos-rest-api.html)** — all endpoints at `/skosmos/rest/v1/`, for software written against Skosmos's API and other SKOS clients.
 - **[HyperTaxonomy Integration](hypertaxonomy-integration.html)** — functions used, feature-flag gates, cache invalidation, and multilingual labels.
 - **[Python Converter](converter.html)** — the SKOS → HyperTaxonomy import converter and its mapping config.
+- **[Architecture](architecture/)** — for contributors: file structure and loading, function and hook references, and the database schema.
 
 ## Getting started
 

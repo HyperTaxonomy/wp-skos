@@ -49,6 +49,8 @@ add_action( 'plugins_loaded', 'wpskos_init' );
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wpskos_action_links' );
 
 /**
+ * Add a Settings link to the plugin's row on the Plugins screen.
+ *
  * @since 1.0.0
  */
 function wpskos_action_links( array $links ): array {
@@ -101,6 +103,8 @@ register_activation_hook( __FILE__, 'wpskos_activate' );
 register_deactivation_hook( __FILE__, 'wpskos_deactivate' );
 
 /**
+ * Add the rewrite rules and flush them on activation.
+ *
  * @since 1.0.0
  */
 function wpskos_activate(): void {
