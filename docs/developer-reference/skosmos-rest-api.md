@@ -1,7 +1,7 @@
 ---
 title: Skosmos REST API
 parent: Developer Reference
-nav_order: 3
+nav_order: 2
 ---
 
 # Skosmos REST API

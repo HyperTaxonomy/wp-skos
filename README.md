@@ -101,7 +101,7 @@ A trimmed concept document. Fields appear only when data is present; a standalon
 Full documentation is published at [hypertaxonomy.org/wp-skos](https://hypertaxonomy.org/wp-skos) (source in [`docs/`](docs/)):
 
 - **[User Guide](docs/user-guide/index.md)** — how terms and taxonomies map to SKOS, concept URIs and slugs, multilingual labels, the `llms.txt` guide and whole-vocabulary export, loading it into a triple store, and the SKOS → HyperTaxonomy Python converter.
-- **[Developer Reference](docs/developer-reference/index.md)** — content negotiation and the full JSON-LD output gallery, the document search and Skosmos REST APIs, filters, and HyperTaxonomy integration.
+- **[Developer Reference](docs/developer-reference/index.md)** — content negotiation and the full JSON-LD output gallery, the Skosmos REST and document search APIs, filters, and HyperTaxonomy integration.
 - **[Architecture](docs/architecture/index.md)** — file structure and loading, function and hook references, and data storage. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
 
 ## Translations
