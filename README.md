@@ -55,7 +55,7 @@ For the full data model — including the typed sub-property URIs — see the [d
 
 ## Concept example
 
-A trimmed concept document. Fields appear only when data is present; a standalone WordPress site produces a smaller document. See the [Concepts & Data Model](docs/concept-uris.md) page for the complete output gallery.
+A trimmed concept document. Fields appear only when data is present; a standalone WordPress site produces a smaller document. See [Concept URIs & JSON-LD](docs/developer-reference/concept-uris.md) for the complete output gallery.
 
 ```json
 {
@@ -98,12 +98,10 @@ A trimmed concept document. Fields appear only when data is present; a standalon
 
 ## Documentation
 
-- **[Concepts & Data Model](docs/concept-uris.md)** — how terms and taxonomies map to SKOS; concept, scheme and collection URIs; content negotiation; OWL property declarations; and the full JSON-LD output gallery.
-- **[Document Search](docs/document-search.md)** — the document-search endpoint, relevance ordering, pagination, and the external-documents filter.
-- **[AI Agents & Export](docs/ai-agents.md)** — the generated `llms.txt` guide and API catalog, the whole-vocabulary export, and loading it into a triple store.
-- **[Skosmos REST API](docs/skosmos-rest-api.md)** — all endpoints at `/skosmos/rest/v1/`.
-- **[HyperTaxonomy Integration](docs/hypertaxonomy-integration.md)** — functions used, feature-flag gates, cache invalidation, and multilingual labels.
-- **[Python Converter](docs/converter.md)** — the SKOS → HyperTaxonomy import converter and its mapping config.
+Full documentation is published at [hypertaxonomy.org/wp-skos](https://hypertaxonomy.org/wp-skos) (source in [`docs/`](docs/)):
+
+- **[User Guide](docs/user-guide/index.md)** — how terms and taxonomies map to SKOS, concept URIs and slugs, multilingual labels, the `llms.txt` guide and whole-vocabulary export, loading it into a triple store, and the SKOS → HyperTaxonomy Python converter.
+- **[Developer Reference](docs/developer-reference/index.md)** — content negotiation and the full JSON-LD output gallery, the document search and Skosmos REST APIs, filters, and HyperTaxonomy integration.
 - **[Architecture](docs/architecture/index.md)** — file structure and loading, function and hook references, and data storage. Coding standards for the whole suite are in HyperTaxonomy's [Contributing guide](https://hypertaxonomy.org/hypertaxonomy/architecture/contributing.html).
 
 ## Translations

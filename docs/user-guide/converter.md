@@ -1,6 +1,7 @@
 ---
 title: Python Converter
-nav_order: 7
+parent: User Guide
+nav_order: 3
 ---
 
 # Python converter

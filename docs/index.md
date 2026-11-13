@@ -14,12 +14,8 @@ Part of the [HyperTaxonomy Suite](https://hypertaxonomy.org) of interoperable Wo
 
 ## Documentation map
 
-- **[Concepts & Data Model](concept-uris.html)** — how terms and taxonomies map to SKOS; concept, scheme and collection URIs; content negotiation; OWL property declarations; and the full JSON-LD output gallery.
-- **[Document Search](document-search.html)** — the concept-queryable document search endpoint, relevance ordering, pagination, and external peer-site documents (sourced via HyperTaxonomy).
-- **[AI Agents & Export](ai-agents.html)** — the generated `llms.txt` guide and API catalog for agents and other clients, the whole-vocabulary export, and loading it into a triple store.
-- **[Skosmos REST API](skosmos-rest-api.html)** — all endpoints at `/skosmos/rest/v1/`, for software written against Skosmos's API and other SKOS clients.
-- **[HyperTaxonomy Integration](hypertaxonomy-integration.html)** — functions used, feature-flag gates, cache invalidation, and multilingual labels.
-- **[Python Converter](converter.html)** — the SKOS → HyperTaxonomy import converter and its mapping config.
+- **[User Guide](user-guide/)** — for site owners: what WP-SKOS publishes, sharing vocabularies with AI agents and triple stores, and importing SKOS files.
+- **[Developer Reference](developer-reference/)** — for integrators: concept URIs and JSON-LD, the document search and Skosmos APIs, filters, and HyperTaxonomy integration.
 - **[Architecture](architecture/)** — for contributors: file structure and loading, function and hook references, and data storage.
 
 ## Getting started

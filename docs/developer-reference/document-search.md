@@ -1,6 +1,7 @@
 ---
 title: Document Search
-nav_order: 3
+parent: Developer Reference
+nav_order: 2
 ---
 
 # Document search endpoint

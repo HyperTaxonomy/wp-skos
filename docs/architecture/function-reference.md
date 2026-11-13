@@ -6,7 +6,7 @@ nav_order: 2
 
 # Function Reference
 
-Functions and methods of WP-SKOS by file, with each one's docblock summary, chosen by one rule used across the suite's plugins. Listed: the public API (documented in the endpoint pages, starting from the [documentation home](../)) and anything called from another file, which is what contributors reuse. Not listed: hook callbacks, which the [Hook Reference](hook-reference.html) names next to their hooks; screen wiring (rendering, enqueueing, menu and column registration, constructors); overrides of a base class's method; and anything used only inside its own file or class, which is best read in the code. This page is generated from the code.
+Functions and methods of WP-SKOS by file, with each one's docblock summary, chosen by one rule used across the suite's plugins. Listed: the public API (documented in the [Developer Reference](../developer-reference/)) and anything called from another file, which is what contributors reuse. Not listed: hook callbacks, which the [Hook Reference](hook-reference.html) names next to their hooks; screen wiring (rendering, enqueueing, menu and column registration, constructors); overrides of a base class's method; and anything used only inside its own file or class, which is best read in the code. This page is generated from the code.
 
 ## Includes
 

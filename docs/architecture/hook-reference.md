@@ -8,7 +8,7 @@ nav_order: 3
 
 The hook registrations in WP-SKOS that you can't guess from a callback's name: priorities chosen to run before other code, the hooks that clear its cache, and a filter added for a single query. Routine registrations (rewrite rules, query vars, the settings screen) are left out; search the code for `add_action( 'hook_name'` to find any of them.
 
-The filters WP-SKOS applies for other code are documented in [AI agents and export](../ai-agents.html#filters).
+The filters WP-SKOS applies for other code are documented in [Filters](../developer-reference/filters.html).
 
 ## Request handling
 

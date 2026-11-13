@@ -1,6 +1,7 @@
 ---
 title: HyperTaxonomy Integration
-nav_order: 6
+parent: Developer Reference
+nav_order: 5
 ---
 
 # HyperTaxonomy integration
@@ -67,15 +68,4 @@ WP-SKOS does not depend on TermConnect or As the Crow Flies directly. HyperTaxon
 
 All transients, the `wpskos_settings` option and the `wpskos_cache_generation` option are deleted when the plugin is uninstalled via the WordPress Plugins screen.
 
-## Multilingual labels
-
-When a multilingual plugin is active, `skos:prefLabel` is an array with one entry per language:
-
-```json
-"skos:prefLabel": [
-  { "@value": "Electric Vehicles", "@language": "en" },
-  { "@value": "Véhicules électriques", "@language": "fr" }
-]
-```
-
-WP-SKOS builds the label map in `get_pref_labels( WP_Term $term )`, which detects multilingual plugins automatically: **Polylang** (via `pll_get_term_translations()`) and **WPML** (via the `wpml_get_element_translations` filter). Sites with no multilingual plugin get a single-entry array using the language tag from Settings → WP-SKOS.
+For multilingual labels, which come from Polylang or WPML rather than HyperTaxonomy, see [Concepts & Data Model](../user-guide/concepts.html#multilingual-labels).

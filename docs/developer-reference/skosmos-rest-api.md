@@ -1,11 +1,12 @@
 ---
 title: Skosmos REST API
-nav_order: 5
+parent: Developer Reference
+nav_order: 3
 ---
 
 # Skosmos REST API
 
-These endpoints follow the REST API that [Skosmos](https://skosmos.org) offers, so software written against that API can read your vocabularies. A Skosmos installation reads its vocabularies from a SPARQL endpoint rather than this API; to use one with your vocabularies, see [Exporting to a triple store](ai-agents.html#exporting-to-a-triple-store).
+These endpoints follow the REST API that [Skosmos](https://skosmos.org) offers, so software written against that API can read your vocabularies. A Skosmos installation reads its vocabularies from a SPARQL endpoint rather than this API; to use one with your vocabularies, see [Exporting to a triple store](../user-guide/ai-agents.html#exporting-to-a-triple-store).
 
 All endpoints are at `/skosmos/rest/v1/`. Only taxonomies enabled in Settings → WP-SKOS are exposed; all others return 404.
 

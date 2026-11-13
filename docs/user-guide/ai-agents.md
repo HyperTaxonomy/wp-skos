@@ -1,6 +1,7 @@
 ---
 title: AI Agents & Export
-nav_order: 4
+parent: User Guide
+nav_order: 2
 ---
 
 # AI agents and export
@@ -72,16 +73,4 @@ WP-SKOS only answers requests that WordPress would otherwise answer with a 404. 
 
 These locations are defined relative to the domain root. On a site installed in a subdirectory, such as `example.com/blog`, the documents are served under that subdirectory, where agents that only check the domain root won't find them.
 
-## Filters
-
-| Filter | Purpose |
-|---|---|
-| `wpskos_llms_txt` | Change the generated guide's text. |
-| `wpskos_serve_root_llms_txt` | Return `false` to stop serving `/llms.txt`, leaving only `/wp-skos/llms.txt`. |
-| `wpskos_allow_export` | Return `false` to turn off the whole-vocabulary export, for all taxonomies or for one. This may suit a very large taxonomy on modest hosting. |
-
-```php
-add_filter( 'wpskos_llms_txt', function ( $guide ) {
-	return $guide . "\n## Licensing\n\n- [Reuse terms](https://example.com/license/): How this vocabulary may be reused.\n";
-} );
-```
+Developers can change the guide or turn off the root `/llms.txt` and the export with [filters](../developer-reference/filters.html).
