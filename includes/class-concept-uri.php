@@ -99,13 +99,9 @@ class WP_SKOS_Concept_URI {
 			self::not_found();
 		}
 
-		// Hidden term check (HT) — mirror build_concept() so the redirect path does
-		// not leak a hidden term's existence to unauthorized clients. Uses HT's own
-		// per-taxonomy visibility policy (htax_can_see_hidden_terms()), not a generic
-		// WordPress capability — a site can configure Hidden Terms visibility to any
-		// role/capability it likes, independent of read_private_posts.
-		if ( function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' )
-			&& htax_is_term_hidden( $term->term_id ) && ! htax_can_see_hidden_terms( $taxonomy ) ) {
+		// Hidden term check (HT) — mirror build_concept() so the redirect path does not
+		// reveal a hidden term. Hidden terms are left out for every viewer.
+		if ( WP_SKOS_Builder::is_hidden( $term->term_id ) ) {
 			self::not_found();
 		}
 
@@ -118,15 +114,14 @@ class WP_SKOS_Concept_URI {
 			}
 		}
 
-		$authed = function_exists( 'htax_can_see_hidden_terms' ) && htax_can_see_hidden_terms( $taxonomy );
-		$cache_key = WP_SKOS_Builder::cache_key_concept( $term->term_id, $authed );
+		$cache_key = WP_SKOS_Builder::cache_key_concept( $term->term_id );
 		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {
 			self::jsonld_response( WP_SKOS_Builder::inject_modified( $cached, $term ) );
 		}
 
-		$data = WP_SKOS_Builder::build_concept( $term, $authed );
+		$data = WP_SKOS_Builder::build_concept( $term );
 		if ( null === $data ) {
 			self::not_found();
 		}
@@ -198,20 +193,7 @@ class WP_SKOS_Concept_URI {
 			self::not_found();
 		}
 
-		// A collection's members can live in any enabled taxonomy (resolved dynamically
-		// inside build_collection(), not known ahead of time), so $authed can only be
-		// correct here if it holds for every enabled taxonomy at once — the conservative
-		// AND-across-taxonomies approach also used for multi-taxonomy document search.
-		$authed = function_exists( 'htax_can_see_hidden_terms' );
-		if ( $authed ) {
-			foreach ( WP_SKOS_Settings::get_enabled_taxonomies() as $tax ) {
-				if ( ! htax_can_see_hidden_terms( $tax ) ) {
-					$authed = false;
-					break;
-				}
-			}
-		}
-		$data = WP_SKOS_Builder::build_collection( $group, $authed );
+		$data = WP_SKOS_Builder::build_collection( $group );
 		if ( null === $data ) {
 			self::not_found();
 		}

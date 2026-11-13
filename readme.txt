@@ -28,7 +28,7 @@ Each term becomes an addressable `skos:Concept` at its own URI (`/wp-skos/concep
 * `skos:closeMatch` for external vocabulary identifiers (Wikidata, GeoNames, LCSH, and any other link type defined in TermConnect)
 * `schema:location` — physical locations as `schema:Place` objects (street address, coordinates) when As the Crow Flies is active
 * Custom relationship types registered in HyperTaxonomy become OWL sub-properties with their own URIs
-* Hidden term filtering — unauthorized users receive 404 for hidden concepts, mirroring HyperTaxonomy's REST behavior
+* Hidden term filtering — hidden concepts return 404 and are left out of every relationship, collection and search result, for every viewer, matching HyperTaxonomy's REST relationship fields
 
 **Multilingual labels.** When Polylang or WPML is active, translation-linked terms contribute `skos:prefLabel` values in their respective languages.
 
@@ -122,7 +122,7 @@ Not directly. Skosmos reads its vocabularies from a SPARQL endpoint, and WP-SKOS
 
 = Does this plugin write anything to the database? =
 
-No custom tables. It reads from WP core taxonomy tables and HyperTaxonomy tables when present. Concept responses are cached as WordPress transients for a day (keyed by term ID and authentication state), and replaced automatically when terms or their relationships change. Two option rows store the plugin settings (`wpskos_settings`) and the current cache generation (`wpskos_cache_generation`). Both options and all transients are deleted automatically when the plugin is uninstalled via the Plugins screen.
+No custom tables. It reads from WP core taxonomy tables and HyperTaxonomy tables when present. Concept responses are cached as WordPress transients for a day (keyed by term ID, the same for every viewer), and replaced automatically when terms or their relationships change. Two option rows store the plugin settings (`wpskos_settings`) and the current cache generation (`wpskos_cache_generation`). Both options and all transients are deleted automatically when the plugin is uninstalled via the Plugins screen.
 
 = What happens to concept URIs when a term is renamed or deleted? =
 

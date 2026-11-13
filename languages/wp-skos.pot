@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 08:35-0400\n"
+"POT-Creation-Date: 2026-11-12 22:01-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,91 +17,87 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: includes/class-concept-uri.php:268
+#: includes/class-concept-uri.php:258
 msgid "Not found"
 msgstr ""
 
-#: includes/class-document-search.php:66
+#: includes/class-document-search.php:68
 msgid ""
 "Peer platform types for external documents (e.g. wordpress, feed). Empty = "
 "all supported."
 msgstr ""
 
-#: includes/class-document-search.php:72
+#: includes/class-document-search.php:74
 msgid "FOAF traversal depth for external documents. 0 = direct peers only."
 msgstr ""
 
-#: includes/class-document-search.php:88
+#: includes/class-document-search.php:92
 msgid "At least one concept URI is required."
 msgstr ""
 
-#: includes/class-settings.php:29 includes/class-settings.php:30
+#: includes/class-settings.php:33 includes/class-settings.php:34
 msgid "WP-SKOS"
 msgstr ""
 
-#: includes/class-settings.php:46
+#: includes/class-settings.php:52
 msgid "Enabled taxonomies"
 msgstr ""
 
-#: includes/class-settings.php:54
+#: includes/class-settings.php:60
 msgid "Default language tag"
 msgstr ""
 
-#: includes/class-settings.php:78
+#: includes/class-settings.php:86
 msgid ""
 "Only enabled taxonomies are exposed via the Skosmos API and concept URIs."
 msgstr ""
 
-#: includes/class-settings.php:92
+#: includes/class-settings.php:102
 msgid ""
 "BCP 47 language tag applied to prefLabel when no multilingual plugin is "
 "active (e.g. <code>en</code>, <code>fr</code>)."
 msgstr ""
 
-#: includes/class-settings.php:103
+#: includes/class-settings.php:115
 msgid "WP-SKOS Settings"
 msgstr ""
 
-#: includes/class-skosmos-api.php:80 includes/class-skosmos-api.php:366
+#: includes/class-skosmos-api.php:86 includes/class-skosmos-api.php:363
 msgid "Unknown vocabulary"
 msgstr ""
 
-#: includes/class-skosmos-api.php:99
+#: includes/class-skosmos-api.php:105
 msgid "Unknown endpoint"
 msgstr ""
 
-#: includes/class-skosmos-api.php:145
+#: includes/class-skosmos-api.php:151
 msgid "Taxonomy not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:230
+#: includes/class-skosmos-api.php:232
 msgid "Missing label parameter"
 msgstr ""
 
-#: includes/class-skosmos-api.php:277
+#: includes/class-skosmos-api.php:275
 msgid "Missing uri parameter"
 msgstr ""
 
-#: includes/class-skosmos-api.php:286
+#: includes/class-skosmos-api.php:284
 msgid "Scheme not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:304 includes/class-skosmos-api.php:311
+#: includes/class-skosmos-api.php:302 includes/class-skosmos-api.php:309
 msgid "URI not recognized"
 msgstr ""
 
-#: includes/class-skosmos-api.php:318
+#: includes/class-skosmos-api.php:316 includes/class-skosmos-api.php:327
 msgid "Concept not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:330
-msgid "Concept not found or access denied"
-msgstr ""
-
-#: includes/class-skosmos-api.php:356
+#: includes/class-skosmos-api.php:353
 msgid "Missing query parameter"
 msgstr ""
 
-#: wp-skos.php:56
+#: wp-skos.php:60
 msgid "Settings"
 msgstr ""

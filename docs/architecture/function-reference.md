@@ -113,19 +113,20 @@ Builds SKOS data structures from WordPress taxonomy and term data.
 - `WP_SKOS_Builder::scheme_uri( string $taxonomy )` — URI of a taxonomy's concept scheme.
 - `WP_SKOS_Builder::collection_uri( string $group_slug )` — URI for a term-group collection.
 - `WP_SKOS_Builder::vocab_property_uri( string $slug, string $source_site = '' )` — URI for a vocabulary property declaration. Built-in types (includes, container, synonym) use the stable cross-site namespace. Local custom types use home_url(). TC-delegated types use the source site's URL.
-- `WP_SKOS_Builder::cache_key_concept( int $term_id, bool $authed )` — Transient key for a cached concept document, separate for viewers who can see hidden terms.
+- `WP_SKOS_Builder::cache_key_concept( int $term_id )` — Transient key for a cached concept document. The document is the same for every viewer, because hidden terms are left out for everyone.
 - `WP_SKOS_Builder::cache_key_scheme( string $taxonomy )` — Transient key for a cached scheme document.
 - `WP_SKOS_Builder::flush_cache()` — Retire every cached concept and scheme document.
 - `WP_SKOS_Builder::get_pref_labels( WP_Term $term )` — Build prefLabel map keyed by BCP 47 language tag.
-- `WP_SKOS_Builder::get_related_terms( WP_Term $term, bool $authed = false, ?array $rel_data = null )` — All terms with any semantic relationship to $term, keyed by term_id. Excludes parent/child (WP hierarchy) — those are skos:broader/narrower.
-- `WP_SKOS_Builder::get_typed_relations( WP_Term $term, bool $authed = false, ?array $rel_data = null )` — Relations organized by typed sub-property, for emitting wpskos:* triples.
+- `WP_SKOS_Builder::get_related_terms( WP_Term $term, ?array $rel_data = null )` — All terms with any semantic relationship to $term, keyed by term_id. Excludes parent/child (WP hierarchy) — those are skos:broader/narrower.
+- `WP_SKOS_Builder::get_typed_relations( WP_Term $term, ?array $rel_data = null )` — Relations organized by typed sub-property, for emitting wpskos:* triples.
 - `WP_SKOS_Builder::get_close_matches( int $term_id )` — External KB URIs for skos:closeMatch.
 - `WP_SKOS_Builder::get_locations( WP_Term $term )` — Physical locations for a concept, formatted as schema:Place JSON-LD objects.
-- `WP_SKOS_Builder::build_concept( WP_Term $term, bool $authed = false )` — Build the full SKOS data array for a concept.
+- `WP_SKOS_Builder::is_hidden( int $term_id )` — Whether a term is hidden in HyperTaxonomy, and so left out of every output for every viewer, the same rule as HyperTaxonomy's REST relationship fields. Output is then the same for all viewers and safe to cache and share.
+- `WP_SKOS_Builder::build_concept( WP_Term $term )` — Build the full SKOS data array for a concept.
 - `WP_SKOS_Builder::get_modified_date( WP_Term $term )` — Most recent post-modified time across the concept's archive, as ISO 8601 (GMT), or null when the archive has no published posts.
 - `WP_SKOS_Builder::inject_modified( array $response, WP_Term $term )` — Inject a live dct:modified into a (possibly cached) concept response.
 - `WP_SKOS_Builder::build_scheme( string $taxonomy )` — Build the SKOS ConceptScheme for a taxonomy.
-- `WP_SKOS_Builder::build_collection( WP_Term $group, bool $authed = false )` — Build the SKOS Collection for a term group.
+- `WP_SKOS_Builder::build_collection( WP_Term $group )` — Build the SKOS Collection for a term group.
 - `WP_SKOS_Builder::build_vocab_property( string $slug )` — Build the OWL property declaration for a vocabulary property.
 - `WP_SKOS_Builder::jsonld_context()` — Standard @context for concept/scheme JSON-LD responses.
 - `WP_SKOS_Builder::labels_to_jsonld( array $labels )` — Convert a [ lang => label ] map to JSON-LD language-tagged literal array.

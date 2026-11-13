@@ -20,7 +20,7 @@ WP-SKOS has no tables and writes no term or post meta. It stores its settings an
 
 | Key | Holds |
 |---|---|
-| `wpskos_cpt_{generation}_{term_id}_{0 or 1}` | A concept document. The last part is 1 for viewers who can see hidden terms. |
+| `wpskos_cpt_{generation}_{term_id}` | A concept document. The same for every viewer, since hidden terms are left out for everyone. |
 | `wpskos_sch_{generation}_{md5(taxonomy)}` | A concept scheme document. |
 
 Both last one day.

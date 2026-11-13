@@ -89,12 +89,13 @@ class WP_SKOS_Builder {
 	}
 
 	/**
-	 * Transient key for a cached concept document, separate for viewers who can see hidden terms.
+	 * Transient key for a cached concept document. The document is the same for every viewer,
+	 * because hidden terms are left out for everyone.
 	 *
 	 * @since 1.0.0
 	 */
-	public static function cache_key_concept( int $term_id, bool $authed ): string {
-		return 'wpskos_cpt_' . self::cache_generation() . '_' . $term_id . '_' . ( $authed ? '1' : '0' );
+	public static function cache_key_concept( int $term_id ): string {
+		return 'wpskos_cpt_' . self::cache_generation() . '_' . $term_id;
 	}
 
 	/**
@@ -261,18 +262,16 @@ class WP_SKOS_Builder {
 	 * All terms with any semantic relationship to $term, keyed by term_id.
 	 * Excludes parent/child (WP hierarchy) — those are skos:broader/narrower.
 	 *
-	 * Hidden HT terms are omitted for unauthorized callers, mirroring the
-	 * skos:broader/narrower hidden-term filtering in build_concept() — otherwise
-	 * a hidden term's existence would leak through skos:related.
+	 * Hidden HT terms are omitted for every viewer, as in skos:broader/narrower in
+	 * build_concept() — otherwise a hidden term's existence would leak through skos:related.
 	 *
 	 * @since 1.0.0
-	 * @param bool       $authed   Whether the caller is authorized to see hidden terms.
 	 * @param array|null $rel_data Pre-fetched relationship data from fetch_relationship_data(),
 	 *                             to avoid re-querying HT when the caller already has it
 	 *                             (build_concept() shares one fetch with get_typed_relations()).
 	 * @return WP_Term[]
 	 */
-	public static function get_related_terms( WP_Term $term, bool $authed = false, ?array $rel_data = null ): array {
+	public static function get_related_terms( WP_Term $term, ?array $rel_data = null ): array {
 		if ( ! function_exists( 'htax_get_included_terms' ) ) {
 			return array();
 		}
@@ -299,7 +298,7 @@ class WP_SKOS_Builder {
 		}
 
 		foreach ( $related as $t_id => $t ) {
-			if ( self::is_hidden_for( $t_id, $authed ) ) {
+			if ( self::is_hidden( $t_id ) ) {
 				unset( $related[ $t_id ] );
 			}
 		}
@@ -319,15 +318,13 @@ class WP_SKOS_Builder {
 	 *     '{custom-slug}_reverse' => [ ... ],          // reverse direction
 	 *   ]
 	 *
-	 * Hidden HT terms are omitted for unauthorized callers, mirroring the
-	 * skos:broader/narrower hidden-term filtering in build_concept() — otherwise
-	 * a hidden term's existence would leak through a wpskos:* sub-property.
+	 * Hidden HT terms are omitted for every viewer, as in skos:broader/narrower in
+	 * build_concept() — otherwise a hidden term's existence would leak through a wpskos:* sub-property.
 	 *
 	 * @since 1.0.0
-	 * @param bool       $authed   Whether the caller is authorized to see hidden terms.
 	 * @param array|null $rel_data Pre-fetched relationship data; see get_related_terms().
 	 */
-	public static function get_typed_relations( WP_Term $term, bool $authed = false, ?array $rel_data = null ): array {
+	public static function get_typed_relations( WP_Term $term, ?array $rel_data = null ): array {
 		if ( ! function_exists( 'htax_get_included_terms' ) ) {
 			return array();
 		}
@@ -371,7 +368,7 @@ class WP_SKOS_Builder {
 		// becomes empty as a result (same convention used when building each above).
 		foreach ( $typed as $slug => $terms ) {
 			foreach ( $terms as $t_id => $t ) {
-				if ( self::is_hidden_for( $t_id, $authed ) ) {
+				if ( self::is_hidden( $t_id ) ) {
 					unset( $terms[ $t_id ] );
 				}
 			}
@@ -509,30 +506,29 @@ class WP_SKOS_Builder {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Whether a related/hierarchy term must be omitted from output because it is
-	 * an HT hidden term and the caller is not authorized.
+	 * Whether a term is hidden in HyperTaxonomy, and so left out of every output for every
+	 * viewer, the same rule as HyperTaxonomy's REST relationship fields. Output is then the
+	 * same for all viewers and safe to cache and share.
 	 *
 	 * @since 1.0.0
-	 * @param int  $term_id Term ID.
-	 * @param bool $authed  Whether the caller is authorized to see hidden terms.
+	 * @param int $term_id Term ID.
 	 * @return bool
 	 */
-	private static function is_hidden_for( int $term_id, bool $authed ): bool {
-		return ! $authed && function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term_id );
+	public static function is_hidden( int $term_id ): bool {
+		return function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term_id );
 	}
 
 	/**
 	 * Build the full SKOS data array for a concept.
 	 *
-	 * Returns null when the term is not found or the taxonomy is not enabled.
-	 * Returns null (and sets a 404 condition) for hidden terms when the caller
-	 * lacks the required capability.
+	 * Returns null when the term is not found, the taxonomy is not enabled, or the term
+	 * is hidden (for every viewer).
 	 *
 	 * @since 1.0.0
 	 */
-	public static function build_concept( WP_Term $term, bool $authed = false ): ?array {
+	public static function build_concept( WP_Term $term ): ?array {
 		// Hidden term check (HT).
-		if ( function_exists( 'htax_is_term_hidden' ) && htax_is_term_hidden( $term->term_id ) && ! $authed ) {
+		if ( self::is_hidden( $term->term_id ) ) {
 			return null;
 		}
 
@@ -561,7 +557,7 @@ class WP_SKOS_Builder {
 		// hierarchy does not leak the existence of hidden concepts.
 		if ( $term->parent ) {
 			$parent = get_term( $term->parent, $taxonomy );
-			if ( $parent instanceof WP_Term && ! self::is_hidden_for( $parent->term_id, $authed ) ) {
+			if ( $parent instanceof WP_Term && ! self::is_hidden( $parent->term_id ) ) {
 				$data['skos:broader'] = array( '@id' => self::concept_uri( $taxonomy, $parent->slug ) );
 			}
 		}
@@ -574,7 +570,7 @@ class WP_SKOS_Builder {
 		if ( ! empty( $children ) && ! is_wp_error( $children ) ) {
 			$narrower = array();
 			foreach ( $children as $child ) {
-				if ( self::is_hidden_for( $child->term_id, $authed ) ) {
+				if ( self::is_hidden( $child->term_id ) ) {
 					continue;
 				}
 				$narrower[] = array( '@id' => self::concept_uri( $taxonomy, $child->slug ) );
@@ -593,7 +589,7 @@ class WP_SKOS_Builder {
 			_prime_term_caches( array_map( 'intval', $ancestor_ids ) );
 			$broader_transitive = array();
 			foreach ( $ancestor_ids as $ancestor_id ) {
-				if ( self::is_hidden_for( (int) $ancestor_id, $authed ) ) {
+				if ( self::is_hidden( (int) $ancestor_id ) ) {
 					continue;
 				}
 				$ancestor = get_term( (int) $ancestor_id, $taxonomy );
@@ -612,7 +608,7 @@ class WP_SKOS_Builder {
 			_prime_term_caches( array_map( 'intval', $descendant_ids ) );
 			$narrower_transitive = array();
 			foreach ( $descendant_ids as $descendant_id ) {
-				if ( self::is_hidden_for( (int) $descendant_id, $authed ) ) {
+				if ( self::is_hidden( (int) $descendant_id ) ) {
 					continue;
 				}
 				$descendant = get_term( (int) $descendant_id, $taxonomy );
@@ -631,7 +627,7 @@ class WP_SKOS_Builder {
 		$rel_data = function_exists( 'htax_get_included_terms' ) ? self::fetch_relationship_data( $term ) : null;
 
 		// skos:related — union of all HT relationship paths.
-		$related = self::get_related_terms( $term, $authed, $rel_data );
+		$related = self::get_related_terms( $term, $rel_data );
 		if ( ! empty( $related ) ) {
 			$data['skos:related'] = array_values( array_map(
 				fn( $t ) => array( '@id' => self::concept_uri( $t->taxonomy, $t->slug ) ),
@@ -640,7 +636,7 @@ class WP_SKOS_Builder {
 		}
 
 		// Typed sub-properties (wpskos:includes, wpskos:container, wpskos:synonym, custom).
-		$typed = self::get_typed_relations( $term, $authed, $rel_data );
+		$typed = self::get_typed_relations( $term, $rel_data );
 		foreach ( $typed as $slug => $terms ) {
 			$is_reverse = '_reverse' === substr( $slug, -8 );
 			$base_slug  = $is_reverse ? substr( $slug, 0, -8 ) : $slug;
@@ -838,17 +834,16 @@ class WP_SKOS_Builder {
 	 * The group hierarchy is NOT expanded for members: child groups are listed as
 	 * nested Collections, so flattening would duplicate their members here.
 	 *
-	 * Returns null when HT is absent, or when the group is hidden and the caller
-	 * is not authenticated.
+	 * Returns null when HT is absent, or when the group is hidden (for every viewer).
 	 *
 	 * @since 1.0.0
 	 */
-	public static function build_collection( WP_Term $group, bool $authed = false ): ?array {
+	public static function build_collection( WP_Term $group ): ?array {
 		if ( ! function_exists( 'htax_get_all_term_groups' ) ) {
 			return null;
 		}
 
-		if ( self::is_hidden_for( $group->term_id, $authed ) ) {
+		if ( self::is_hidden( $group->term_id ) ) {
 			return null;
 		}
 
@@ -870,7 +865,7 @@ class WP_SKOS_Builder {
 		) );
 		if ( ! is_wp_error( $child_groups ) ) {
 			foreach ( $child_groups as $child ) {
-				if ( self::is_hidden_for( $child->term_id, $authed ) ) {
+				if ( self::is_hidden( $child->term_id ) ) {
 					continue;
 				}
 				$members[] = array( '@id' => self::collection_uri( $child->slug ) );
@@ -908,7 +903,7 @@ class WP_SKOS_Builder {
 			if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $member->taxonomy ) ) {
 				continue;
 			}
-			if ( self::is_hidden_for( $member->term_id, $authed ) ) {
+			if ( self::is_hidden( $member->term_id ) ) {
 				continue;
 			}
 			$members[] = array( '@id' => self::concept_uri( $member->taxonomy, $member->slug ) );

@@ -86,21 +86,19 @@ class WP_SKOS_Export {
 			exit;
 		}
 
-		$authed = function_exists( 'htax_can_see_hidden_terms' ) && htax_can_see_hidden_terms( $taxonomy );
-
 		status_header( 200 );
 		header_remove( 'Expires' );
 		header_remove( 'Pragma' );
 		header( 'Content-Type: application/ld+json; charset=utf-8' );
-		// A viewer who can see hidden terms gets a different file, which must not be shared.
-		header( 'Cache-Control: ' . ( $authed ? 'private, no-store' : 'public, max-age=3600' ) );
+		// Hidden terms are left out for every viewer, so the file is the same for everyone.
+		header( 'Cache-Control: public, max-age=3600' );
 		header( 'X-Content-Type-Options: nosniff' );
 
 		if ( $is_head ) {
 			exit;
 		}
 
-		self::stream( $taxonomy, $authed );
+		self::stream( $taxonomy );
 		exit;
 	}
 
@@ -134,9 +132,8 @@ class WP_SKOS_Export {
 	 *
 	 * @since 1.0.0
 	 * @param string $taxonomy Taxonomy slug.
-	 * @param bool   $authed   Whether the viewer can see hidden terms.
 	 */
-	private static function stream( string $taxonomy, bool $authed ): void {
+	private static function stream( string $taxonomy ): void {
 		if ( function_exists( 'set_time_limit' ) ) {
 			set_time_limit( 0 );
 		}
@@ -168,7 +165,7 @@ class WP_SKOS_Export {
 			) );
 
 			foreach ( is_wp_error( $terms ) ? array() : $terms as $term ) {
-				$concept = self::concept( $term, $authed );
+				$concept = self::concept( $term );
 				if ( null === $concept ) {
 					continue;
 				}
@@ -190,12 +187,11 @@ class WP_SKOS_Export {
 	 * rows to the options table.
 	 *
 	 * @since 1.0.0
-	 * @param WP_Term $term   Term.
-	 * @param bool    $authed Whether the viewer can see hidden terms.
-	 * @return array|null Null when the viewer can't see the term.
+	 * @param WP_Term $term Term.
+	 * @return array|null Null when the term is hidden.
 	 */
-	private static function concept( WP_Term $term, bool $authed ): ?array {
-		$data = WP_SKOS_Builder::build_concept( $term, $authed );
+	private static function concept( WP_Term $term ): ?array {
+		$data = WP_SKOS_Builder::build_concept( $term );
 		if ( null === $data ) {
 			return null;
 		}

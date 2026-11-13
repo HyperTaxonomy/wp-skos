@@ -11,7 +11,7 @@ WP-SKOS calls HyperTaxonomy through function-existence-guarded wrappers. It has 
 
 | HyperTaxonomy function | Purpose |
 |---|---|
-| `htax_is_term_hidden( $term_id )` / `htax_can_see_hidden_terms( $taxonomy )` | Gate hidden terms: return 404 for unauthorized users, skip hidden concepts in document search, and filter hidden groups, child groups and member concepts from Collections. The visibility decision stays with HyperTaxonomy |
+| `htax_is_term_hidden( $term_id )` | Leave hidden terms out of every output for every viewer, the same rule as HyperTaxonomy's REST relationship fields: a hidden concept or group returns 404, and hidden terms are dropped from relationships, Collections, the Skosmos API, the export and document search. Output is then the same for everyone and safe to cache |
 | `htax_get_included_terms( $term )` | Inclusions → `skos:related` and the `wpskos:includes` sub-property |
 | `htax_get_container_terms( $term )` | Containers (reverse inclusions) → `skos:related` and the `wpskos:container` sub-property |
 | `htax_get_synonym_terms( $term )` | Mutual inclusions → `skos:related` and the `wpskos:synonym` sub-property |
@@ -43,11 +43,10 @@ Concept and scheme documents are cached as WordPress transients for one day:
 
 | Key pattern | Content |
 |---|---|
-| `wpskos_cpt_{generation}_{term_id}_0` | Concept JSON-LD, unauthenticated view |
-| `wpskos_cpt_{generation}_{term_id}_1` | Concept JSON-LD, authenticated view (may include hidden linked concepts) |
+| `wpskos_cpt_{generation}_{term_id}` | Concept JSON-LD |
 | `wpskos_sch_{generation}_{md5(taxonomy)}` | ConceptScheme JSON-LD |
 
-The two concept variants exist because hidden linked terms appear in `skos:narrower` / `skos:related` for privileged users but are suppressed for public visitors.
+There is one cached document per concept: hidden linked terms are left out of `skos:narrower`, `skos:related` and the other relationships for every viewer, so every viewer gets the same document.
 
 A concept document also holds its neighbors' URIs and visibility, so one term's change can affect many documents. Instead of working out which, any relevant change moves to a new generation (the `wpskos_cache_generation` option), which retires every cached document:
 

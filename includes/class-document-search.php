@@ -101,17 +101,12 @@ class WP_SKOS_Document_Search {
 			}
 		}
 
-		// HyperTaxonomy owns term visibility: drop concepts hidden from the current
-		// user so neither local results nor external documents leak them. Hidden
-		// terms are an HT concept, so this is a no-op when HT is not active. Guard
-		// on both functions actually called here, not just the first one — a build
-		// exposing htax_is_term_hidden() without htax_can_see_hidden_terms() would
-		// otherwise fatal instead of gracefully degrading.
-		if ( function_exists( 'htax_is_term_hidden' ) && function_exists( 'htax_can_see_hidden_terms' ) ) {
-			foreach ( $resolved_terms as $uri => $term ) {
-				if ( htax_is_term_hidden( $term->term_id ) && ! htax_can_see_hidden_terms( $term->taxonomy ) ) {
-					unset( $resolved_terms[ $uri ] );
-				}
+		// Drop hidden concepts, for every viewer, so neither local results nor external
+		// documents reveal them and results are the same for everyone. A no-op when
+		// HyperTaxonomy isn't active.
+		foreach ( $resolved_terms as $uri => $term ) {
+			if ( WP_SKOS_Builder::is_hidden( $term->term_id ) ) {
+				unset( $resolved_terms[ $uri ] );
 			}
 		}
 
@@ -176,13 +171,7 @@ class WP_SKOS_Document_Search {
 		foreach ( $resolved_terms as $term ) {
 			$taxonomies[ $term->taxonomy ] = true;
 		}
-		// Hidden-term index rows count only for users HyperTaxonomy lets see hidden
-		// terms in every queried taxonomy (its configurable visibility policy).
-		$authed = function_exists( 'htax_can_see_hidden_terms' );
-		foreach ( array_keys( $taxonomies ) as $tax ) {
-			$authed = $authed && htax_can_see_hidden_terms( $tax );
-		}
-		$page_ids = self::ranked_page_ids( $candidate_sql, $all_expanded_ids, $authed, array_keys( $taxonomies ), $per_page, ( $page - 1 ) * $per_page );
+		$page_ids = self::ranked_page_ids( $candidate_sql, $all_expanded_ids, array_keys( $taxonomies ), $per_page, ( $page - 1 ) * $per_page );
 
 		// Load the page's posts, preserving rank order.
 		$posts    = array();
@@ -260,16 +249,15 @@ class WP_SKOS_Document_Search {
 	 * @since 1.0.0
 	 * @param string   $candidate_sql Candidate SQL from candidate_sql().
 	 * @param int[]    $expanded_ids  All expanded term IDs across every concept.
-	 * @param bool     $authed        Whether the user may see hidden terms' rows.
 	 * @param string[] $taxonomies    Taxonomies of the queried concepts (for feature gating).
 	 * @param int      $limit         Page size.
 	 * @param int      $offset        Rows to skip.
 	 * @return int[]
 	 */
-	private static function ranked_page_ids( string $candidate_sql, array $expanded_ids, bool $authed, array $taxonomies, int $limit, int $offset ): array {
+	private static function ranked_page_ids( string $candidate_sql, array $expanded_ids, array $taxonomies, int $limit, int $offset ): array {
 		global $wpdb;
 
-		$scores_sql = self::scores_sql( $expanded_ids, $authed, $taxonomies );
+		$scores_sql = self::scores_sql( $expanded_ids, $taxonomies );
 		$page_sql   = ' LIMIT ' . absint( $limit ) . ' OFFSET ' . absint( $offset );
 
 		// The candidate SQL is spliced in after prepare() so that any literal '%' it
@@ -300,11 +288,10 @@ class WP_SKOS_Document_Search {
 	 *
 	 * @since 1.0.0
 	 * @param int[]    $expanded_ids All expanded term IDs across every concept.
-	 * @param bool     $authed       Whether the user may see hidden terms' rows.
 	 * @param string[] $taxonomies   Taxonomies of the queried concepts (for feature gating).
 	 * @return string
 	 */
-	private static function scores_sql( array $expanded_ids, bool $authed, array $taxonomies ): string {
+	private static function scores_sql( array $expanded_ids, array $taxonomies ): string {
 		if ( empty( $expanded_ids ) || ! function_exists( 'htax_get_expanded_term_ids' ) ) {
 			return '';
 		}
@@ -319,7 +306,8 @@ class WP_SKOS_Document_Search {
 
 		$term_ph = implode( ',', array_fill( 0, count( $expanded_ids ), '%d' ) );
 
-		$hidden_clause = $authed ? '' : ' AND is_hidden = 0';
+		// Index rows for hidden terms don't count, for every viewer.
+		$hidden_clause = ' AND is_hidden = 0';
 
 		// The index stores strength per scoring model; aggregate only the one
 		// HyperTaxonomy uses for search, or rows would count once per model.
@@ -435,8 +423,9 @@ class WP_SKOS_Document_Search {
 	 * Return an array of WP term IDs covering the concept and its HT expansion.
 	 *
 	 * With HT active: uses htax_get_expanded_term_ids() — the canonical archive
-	 * expansion (term + visible WP descendants + fully expanded HT inclusions and
-	 * group-based expansion). Falls back to the term + WP children when HT returns
+	 * expansion (term + WP descendants + fully expanded HT inclusions and group-based
+	 * expansion) — with hidden terms left out for every viewer, so the candidate posts
+	 * are the same for everyone. Falls back to the term + WP children when HT returns
 	 * an empty set (taxonomy not HT-enabled) or HT is absent.
 	 *
 	 * @since 1.0.0
@@ -448,7 +437,8 @@ class WP_SKOS_Document_Search {
 			// redirecting terms' posts, matching the HyperTaxonomy search index.
 			$ids = htax_get_expanded_term_ids( $term->term_id, true );
 			if ( ! empty( $ids ) ) {
-				return array_unique( array_map( 'intval', $ids ) );
+				$ids = array_unique( array_map( 'intval', $ids ) );
+				return function_exists( 'htax_remove_hidden_term_ids' ) ? htax_remove_hidden_term_ids( $ids ) : $ids;
 			}
 		}
 

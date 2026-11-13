@@ -31,7 +31,7 @@ Each enabled vocabulary is available as one JSON-LD file:
 GET /wp-skos/export/{taxonomy}.jsonld
 ```
 
-The file holds the concept scheme and every concept visible to the requester, so request it without logging in to leave hidden terms out. It's standard RDF, so it can be loaded into a triple store and used by anything that reads one, including a Skosmos installation.
+The file holds the concept scheme and every concept except hidden ones, and is the same whoever requests it. It's standard RDF, so it can be loaded into a triple store and used by anything that reads one, including a Skosmos installation.
 
 {: .note }
 > The file has been checked with an RDF parser, but this route hasn't yet been tested against a live Skosmos installation. The Skosmos and Fuseki settings below are a starting point, so check them against the documentation for your versions.
