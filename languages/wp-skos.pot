@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 22:01-0500\n"
+"POT-Creation-Date: 2026-11-13 11:02-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: includes/class-concept-uri.php:258
+#: includes/class-concept-uri.php:244
 msgid "Not found"
 msgstr ""
 
@@ -62,7 +62,7 @@ msgstr ""
 msgid "WP-SKOS Settings"
 msgstr ""
 
-#: includes/class-skosmos-api.php:86 includes/class-skosmos-api.php:363
+#: includes/class-skosmos-api.php:86 includes/class-skosmos-api.php:350
 msgid "Unknown vocabulary"
 msgstr ""
 
@@ -90,11 +90,11 @@ msgstr ""
 msgid "URI not recognized"
 msgstr ""
 
-#: includes/class-skosmos-api.php:316 includes/class-skosmos-api.php:327
+#: includes/class-skosmos-api.php:316 includes/class-skosmos-api.php:321
 msgid "Concept not found"
 msgstr ""
 
-#: includes/class-skosmos-api.php:353
+#: includes/class-skosmos-api.php:340
 msgid "Missing query parameter"
 msgstr ""
 
