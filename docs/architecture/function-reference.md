@@ -19,13 +19,13 @@ WP-SKOS's functions and public and protected methods, by file, with each one's d
 
 ## Plugin root
 
-### `uninstall.php`
+### Uninstall (`uninstall.php`)
 
 Runs when the plugin is deleted via the WordPress admin.
 
 - `wpskos_uninstall_cleanup()` — Clean up the current site.
 
-### `wp-skos.php`
+### Main plugin file (`wp-skos.php`)
 
 Main plugin file.
 
@@ -37,7 +37,7 @@ Main plugin file.
 
 ## Includes
 
-### `includes/class-agent-discovery.php`
+### AI agent discovery (`includes/class-agent-discovery.php`)
 
 Tells AI agents and other API clients how to use this site's vocabularies.
 
@@ -50,7 +50,7 @@ Tells AI agents and other API clients how to use this site's vocabularies.
 - `WP_SKOS_Agent_Discovery::build_guide()` — Build the llms.txt guide for this site's enabled vocabularies.
 - `WP_SKOS_Agent_Discovery::build_catalog()` — Build the RFC 9727 API catalog, in Linkset format.
 
-### `includes/class-concept-uri.php`
+### Concept URIs (`includes/class-concept-uri.php`)
 
 Handles stable concept, scheme, and vocabulary property URIs.
 
@@ -62,7 +62,7 @@ Handles stable concept, scheme, and vocabulary property URIs.
 - `WP_SKOS_Concept_URI::add_query_vars( array $vars )` — Register the query vars those rewrite rules set.
 - `WP_SKOS_Concept_URI::dispatch()` — Serve the concept, collection, scheme or property document the request asks for.
 
-### `includes/class-document-search.php`
+### Document search (`includes/class-document-search.php`)
 
 Document search endpoint.
 
@@ -73,7 +73,7 @@ Document search endpoint.
 - `WP_SKOS_Document_Search::register_route()` — Register GET /wp-skos/v1/posts.
 - `WP_SKOS_Document_Search::handle( WP_REST_Request $request )` — Run a document search and return the matching posts.
 
-### `includes/class-export.php`
+### JSON-LD export (`includes/class-export.php`)
 
 Serves a whole vocabulary as one JSON-LD file.
 
@@ -84,7 +84,7 @@ Serves a whole vocabulary as one JSON-LD file.
 - `WP_SKOS_Export::url( string $taxonomy )` — URL of a taxonomy's export.
 - `WP_SKOS_Export::dispatch()` — Serve the export when the request is for its path, and nothing else has claimed it.
 
-### `includes/class-settings.php`
+### Settings page (`includes/class-settings.php`)
 
 Admin settings page.
 
@@ -102,7 +102,7 @@ Admin settings page.
 - `WP_SKOS_Settings::get_default_language()` — Language tag for labels when no multilingual plugin is active.
 - `WP_SKOS_Settings::is_taxonomy_enabled( string $taxonomy )` — Whether a taxonomy is exposed as a SKOS vocabulary.
 
-### `includes/class-skos-builder.php`
+### SKOS builder (`includes/class-skos-builder.php`)
 
 Builds SKOS data structures from WordPress taxonomy and term data.
 
@@ -130,7 +130,7 @@ Builds SKOS data structures from WordPress taxonomy and term data.
 - `WP_SKOS_Builder::jsonld_context()` — Standard @context for concept/scheme JSON-LD responses.
 - `WP_SKOS_Builder::labels_to_jsonld( array $labels )` — Convert a [ lang => label ] map to JSON-LD language-tagged literal array.
 
-### `includes/class-skosmos-api.php`
+### Skosmos REST API (`includes/class-skosmos-api.php`)
 
 Skosmos REST API implementation.
 
