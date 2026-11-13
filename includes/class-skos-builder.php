@@ -553,8 +553,8 @@ class WP_SKOS_Builder {
 			$data[ $prop ] = array( '@value' => wp_strip_all_tags( $term->description ), '@language' => $lang );
 		}
 
-		// Hierarchy. Hidden terms (HT) are omitted for unauthorized clients so the
-		// hierarchy does not leak the existence of hidden concepts.
+		// Hierarchy. Hidden terms (HT) are omitted for every viewer so the hierarchy
+		// does not reveal hidden concepts.
 		if ( $term->parent ) {
 			$parent = get_term( $term->parent, $taxonomy );
 			if ( $parent instanceof WP_Term && ! self::is_hidden( $parent->term_id ) ) {
