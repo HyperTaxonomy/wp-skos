@@ -519,6 +519,28 @@ class WP_SKOS_Builder {
 	}
 
 	/**
+	 * JSON-LD references to the non-hidden concepts among some term IDs.
+	 *
+	 * @since 1.0.0
+	 * @param int[]  $term_ids Term IDs; their term cache should already be primed.
+	 * @param string $taxonomy Their taxonomy.
+	 * @return array[] Each entry: { @id }.
+	 */
+	private static function concept_refs( array $term_ids, string $taxonomy ): array {
+		$refs = array();
+		foreach ( $term_ids as $term_id ) {
+			if ( self::is_hidden( (int) $term_id ) ) {
+				continue;
+			}
+			$term = get_term( (int) $term_id, $taxonomy );
+			if ( $term instanceof WP_Term ) {
+				$refs[] = array( '@id' => self::concept_uri( $taxonomy, $term->slug ) );
+			}
+		}
+		return $refs;
+	}
+
+	/**
 	 * Build the full SKOS data array for a concept.
 	 *
 	 * Returns null when the term is not found, the taxonomy is not enabled, or the term
@@ -587,16 +609,7 @@ class WP_SKOS_Builder {
 			// Prime the term cache once so the per-ancestor get_term() calls below
 			// hit cache instead of issuing a query each (same data, fewer queries).
 			_prime_term_caches( array_map( 'intval', $ancestor_ids ) );
-			$broader_transitive = array();
-			foreach ( $ancestor_ids as $ancestor_id ) {
-				if ( self::is_hidden( (int) $ancestor_id ) ) {
-					continue;
-				}
-				$ancestor = get_term( (int) $ancestor_id, $taxonomy );
-				if ( $ancestor instanceof WP_Term ) {
-					$broader_transitive[] = array( '@id' => self::concept_uri( $taxonomy, $ancestor->slug ) );
-				}
-			}
+			$broader_transitive = self::concept_refs( $ancestor_ids, $taxonomy );
 			if ( ! empty( $broader_transitive ) ) {
 				$data['skos:broaderTransitive'] = $broader_transitive;
 			}
@@ -606,16 +619,7 @@ class WP_SKOS_Builder {
 		if ( ! empty( $descendant_ids ) && ! is_wp_error( $descendant_ids ) ) {
 			// Prime the term cache once (see note above) before the per-descendant loop.
 			_prime_term_caches( array_map( 'intval', $descendant_ids ) );
-			$narrower_transitive = array();
-			foreach ( $descendant_ids as $descendant_id ) {
-				if ( self::is_hidden( (int) $descendant_id ) ) {
-					continue;
-				}
-				$descendant = get_term( (int) $descendant_id, $taxonomy );
-				if ( $descendant instanceof WP_Term ) {
-					$narrower_transitive[] = array( '@id' => self::concept_uri( $taxonomy, $descendant->slug ) );
-				}
-			}
+			$narrower_transitive = self::concept_refs( $descendant_ids, $taxonomy );
 			if ( ! empty( $narrower_transitive ) ) {
 				$data['skos:narrowerTransitive'] = $narrower_transitive;
 			}
@@ -767,6 +771,33 @@ class WP_SKOS_Builder {
 		}
 		$ts = strtotime( $modified . ' UTC' );
 		return false !== $ts ? gmdate( 'c', $ts ) : null;
+	}
+
+	/**
+	 * A concept's JSON-LD document, from the cache or freshly built and cached.
+	 *
+	 * Shared by the concept URI and the Skosmos API's data endpoint. The cached copy
+	 * is stored without dct:modified, which inject_modified() adds on every read.
+	 *
+	 * @since 1.0.0
+	 * @param WP_Term $term Concept term.
+	 * @return array|null The document, or null when the term can't be built as a concept.
+	 */
+	public static function concept_document( WP_Term $term ): ?array {
+		$cache_key = self::cache_key_concept( $term->term_id );
+		$document  = get_transient( $cache_key );
+		if ( false === $document ) {
+			$data = self::build_concept( $term );
+			if ( null === $data ) {
+				return null;
+			}
+			$document = array(
+				'@context' => self::jsonld_context(),
+				'@graph'   => array( $data ),
+			);
+			set_transient( $cache_key, $document, self::CACHE_TTL );
+		}
+		return self::inject_modified( $document, $term );
 	}
 
 	/**

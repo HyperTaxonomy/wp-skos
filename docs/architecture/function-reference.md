@@ -57,11 +57,11 @@ Builds SKOS data structures from WordPress taxonomy and term data.
 
 - `WP_SKOS_Builder::concept_uri( string $taxonomy, string $term_slug )` — URI of a term's concept.
 - `WP_SKOS_Builder::scheme_uri( string $taxonomy )` — URI of a taxonomy's concept scheme.
-- `WP_SKOS_Builder::cache_key_concept( int $term_id )` — Transient key for a cached concept document. The document is the same for every viewer, because hidden terms are left out for everyone.
 - `WP_SKOS_Builder::cache_key_scheme( string $taxonomy )` — Transient key for a cached scheme document.
 - `WP_SKOS_Builder::get_pref_labels( WP_Term $term )` — Build prefLabel map keyed by BCP 47 language tag.
 - `WP_SKOS_Builder::is_hidden( int $term_id )` — Whether a term is hidden in HyperTaxonomy, and so left out of every output for every viewer, the same rule as HyperTaxonomy's REST relationship fields. Output is then the same for all viewers and safe to cache and share.
 - `WP_SKOS_Builder::build_concept( WP_Term $term )` — Build the full SKOS data array for a concept.
+- `WP_SKOS_Builder::concept_document( WP_Term $term )` — A concept's JSON-LD document, from the cache or freshly built and cached.
 - `WP_SKOS_Builder::inject_modified( array $response, WP_Term $term )` — Inject a live dct:modified into a (possibly cached) concept response.
 - `WP_SKOS_Builder::build_scheme( string $taxonomy )` — Build the SKOS ConceptScheme for a taxonomy.
 - `WP_SKOS_Builder::build_collection( WP_Term $group )` — Build the SKOS Collection for a term group.

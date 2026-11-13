@@ -316,24 +316,11 @@ class WP_SKOS_Skosmos_API {
 			self::error( __( 'Concept not found', 'wp-skos' ), 404 );
 		}
 
-		$cache_key = WP_SKOS_Builder::cache_key_concept( $term->term_id );
-		$cached    = get_transient( $cache_key );
-		if ( false !== $cached ) {
-			self::jsonld_response( WP_SKOS_Builder::inject_modified( $cached, $term ) );
-		}
-
-		$concept_data = WP_SKOS_Builder::build_concept( $term );
-		if ( null === $concept_data ) {
+		$document = WP_SKOS_Builder::concept_document( $term );
+		if ( null === $document ) {
 			self::error( __( 'Concept not found', 'wp-skos' ), 404 );
 		}
-
-		$response = array(
-			'@context' => WP_SKOS_Builder::jsonld_context(),
-			'@graph'   => array( $concept_data ),
-		);
-
-		set_transient( $cache_key, $response, WP_SKOS_Builder::CACHE_TTL );
-		self::jsonld_response( WP_SKOS_Builder::inject_modified( $response, $term ) );
+		self::jsonld_response( $document );
 	}
 
 	/**
