@@ -6,79 +6,30 @@ nav_order: 3
 
 # Hook Reference
 
-Where WP-SKOS registers its callbacks, and the hooks it fires for other code. This page is generated from the code. Hook names that are built at runtime are shown as the PHP expression that builds them. For how to use the hooks WP-SKOS fires, see the endpoint pages, starting from the [documentation home](../).
+The hook registrations in WP-SKOS that you can't guess from a callback's name: priorities chosen to run before other code, the hooks that clear its cache, and a filter added for a single query. Routine registrations (rewrite rules, query vars, the settings screen) are left out; search the code for `add_action( 'hook_name'` to find any of them.
 
-## Callbacks registered
+The filters WP-SKOS applies for other code are documented in [AI agents and export](../ai-agents.html#filters).
 
-### Plugin root
+## Request handling
 
-**`wp-skos.php`**
+WP-SKOS serves its URLs from `template_redirect`:
 
-| Hook | Callback | Priority |
+| Callback | Priority | Why |
 |---|---|---|
-| `init` | `*(anonymous function)*` | 10 |
-| `plugins_loaded` | `wpskos_init` | 10 |
-| `'plugin_action_links_' . plugin_basename( __FILE__ )` | `wpskos_action_links` | 10 |
-| `redirect_canonical` | `wpskos_disable_canonical_redirect` | 10 |
+| `WP_SKOS_Agent_Discovery::dispatch` (llms.txt and the API catalog) | 1 | These paths have no rewrite rule, so WordPress treats them as a 404; this runs before `redirect_canonical` (priority 10) acts on it |
+| `WP_SKOS_Export::dispatch` (whole-vocabulary export) | 1 | The same |
+| `WP_SKOS_Concept_URI::dispatch` (concept, collection and scheme URIs) | 10 | Matched by rewrite rules |
+| `WP_SKOS_Skosmos_API::dispatch` (Skosmos REST API) | 10 | Matched by a rewrite rule |
 
-### Includes
+## Cache invalidation
 
-**`includes/class-agent-discovery.php`**
+`WP_SKOS_Builder::flush_cache` runs on every hook that can change a concept document, its own or a neighbor's:
 
-| Hook | Callback | Priority |
-|---|---|---|
-| `template_redirect` | `WP_SKOS_Agent_Discovery::dispatch` | 1 |
+- WordPress: `saved_term`, `delete_term`, `update_option_wpskos_settings`
+- HyperTaxonomy (these fire only when it is active): `htax_includes_changed`, `htax_containers_changed`, `htax_relationship_saved`, `htax_relationship_deleted`, `htax_redirect_changed`, `htax_redirect_removed`, `htax_term_visibility_changed`, `htax_term_uris_changed`, `htax_term_locations_changed`
 
-**`includes/class-concept-uri.php`**
+Changes no hook reports, such as a HyperTaxonomy feature flag, show up when the cache expires.
 
-| Hook | Callback | Priority |
-|---|---|---|
-| `init` | `WP_SKOS_Concept_URI::add_rewrite_rules` | 10 |
-| `query_vars` | `WP_SKOS_Concept_URI::add_query_vars` | 10 |
-| `template_redirect` | `WP_SKOS_Concept_URI::dispatch` | 10 |
+## Document search
 
-**`includes/class-document-search.php`**
-
-| Hook | Callback | Priority |
-|---|---|---|
-| `rest_api_init` | `WP_SKOS_Document_Search::register_route` | 10 |
-| `posts_pre_query` | `$skip_query` | PHP_INT_MAX |
-| `posts_pre_query` (remove filter) | `$skip_query` | PHP_INT_MAX |
-
-**`includes/class-export.php`**
-
-| Hook | Callback | Priority |
-|---|---|---|
-| `template_redirect` | `WP_SKOS_Export::dispatch` | 1 |
-
-**`includes/class-settings.php`**
-
-| Hook | Callback | Priority |
-|---|---|---|
-| `admin_menu` | `WP_SKOS_Settings::add_menu` | 10 |
-| `admin_init` | `WP_SKOS_Settings::register_settings` | 10 |
-
-**`includes/class-skos-builder.php`**
-
-| Hook | Callback | Priority |
-|---|---|---|
-| `$wpskos_hook` | `WP_SKOS_Builder::flush_cache` | 10 |
-
-**`includes/class-skosmos-api.php`**
-
-| Hook | Callback | Priority |
-|---|---|---|
-| `init` | `WP_SKOS_Skosmos_API::add_rewrite_rules` | 10 |
-| `query_vars` | `WP_SKOS_Skosmos_API::add_query_vars` | 10 |
-| `template_redirect` | `WP_SKOS_Skosmos_API::dispatch` | 10 |
-
-## Hooks fired
-
-Actions and filters WP-SKOS fires for other code to use.
-
-| Hook | Type | File | Description |
-|---|---|---|---|
-| `wpskos_serve_root_llms_txt` | filter | `includes/class-agent-discovery.php` | Filters whether the guide is also served at the site root, /llms.txt. |
-| `wpskos_llms_txt` | filter | `includes/class-agent-discovery.php` | Filters the generated llms.txt guide. |
-| `wpskos_allow_export` | filter | `includes/class-export.php` | Filters whether a vocabulary can be exported as one file. |
-| `wpml_get_element_translations` | filter | `includes/class-skos-builder.php` | — |
+`WP_SKOS_Document_Search` builds the SQL for its candidate posts with `WP_Query` but doesn't run it: it adds a `posts_pre_query` filter at `PHP_INT_MAX` that returns an empty result for that one query object, takes the generated SQL, and removes the filter again. Counting, ranking and paging then run in SQL on top of it.

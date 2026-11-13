@@ -30,6 +30,7 @@ class WP_SKOS_Export {
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
+		// Before redirect_canonical (priority 10), which would otherwise act on the 404.
 		add_action( 'template_redirect', array( __CLASS__, 'dispatch' ), 1 );
 	}
 
