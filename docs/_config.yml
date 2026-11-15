@@ -1,0 +1,18 @@
+title: WP-SKOS
+description: Expose WordPress taxonomies as SKOS linked data through concept URIs and a REST API that follows Skosmos's.
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+baseurl: "/wp-skos"
+url: "https://hypertaxonomy.org"
+search_enabled: true
+heading_anchors: true
+color_scheme: hypertaxonomy
+aux_links:
+  "GitHub": ["https://github.com/HyperTaxonomy/wp-skos"]
+  "HyperTaxonomy Suite": ["https://hypertaxonomy.org"]
+aux_links_new_tab: false
+callouts:
+  note:
+    title: Note
+    color: blue
