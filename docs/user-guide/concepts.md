@@ -6,7 +6,7 @@ nav_order: 1
 
 # Concepts & Data Model
 
-Each taxonomy you enable in **Settings → WP-SKOS** becomes a SKOS concept scheme, and each of its terms a concept with its own URI. This page shows what each part of a term becomes. For the exact responses, see [Concept URIs & JSON-LD](../developer-reference/concept-uris.html).
+Each taxonomy you enable in **Settings&nbsp;→ WP-SKOS** becomes a SKOS concept scheme, and each of its terms a concept with its own URI. This page shows what each part of a term becomes. For the exact responses, see [Concept URIs & JSON-LD](../developer-reference/concept-uris.html).
 
 ## Data model
 
@@ -63,4 +63,4 @@ When a multilingual plugin is active, `skos:prefLabel` is an array with one entr
 ]
 ```
 
-WP-SKOS builds the label map in `get_pref_labels( WP_Term $term )`, which detects multilingual plugins automatically: **Polylang** (via `pll_get_term_translations()`) and **WPML** (via the `wpml_get_element_translations` filter). Sites with no multilingual plugin get a single-entry array using the language tag from Settings → WP-SKOS.
+WP-SKOS builds the label map in `get_pref_labels( WP_Term $term )`, which detects multilingual plugins automatically: **Polylang** (via `pll_get_term_translations()`) and **WPML** (via the `wpml_get_element_translations` filter). Sites with no multilingual plugin get a single-entry array using the language tag from Settings&nbsp;→ WP-SKOS.

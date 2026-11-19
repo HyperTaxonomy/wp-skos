@@ -1,4 +1,4 @@
-=== WP-SKOS – Linked Data for Taxonomies – SKOS concept schemes, concept URIs, JSON-LD export and a Skosmos-compatible REST API ===
+=== WP-SKOS – Linked Data for Taxonomies ===
 Tags: skos, linked data, taxonomy, vocabulary, semantic web, skosmos, rdf, json-ld
 Contributors: eugenevv
 Author: Eugene Weinstein

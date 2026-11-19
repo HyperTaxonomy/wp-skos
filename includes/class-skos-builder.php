@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WP_SKOS_Builder {
+class WPSKOS_Builder {
 
 	/**
 	 * How long concept and scheme documents stay cached, in seconds.
@@ -207,7 +207,7 @@ class WP_SKOS_Builder {
 		if ( $meta_lang !== '' ) {
 			return sanitize_key( $meta_lang );
 		}
-		return WP_SKOS_Settings::get_default_language();
+		return WPSKOS_Settings::get_default_language();
 	}
 
 	// -------------------------------------------------------------------------
@@ -557,7 +557,7 @@ class WP_SKOS_Builder {
 		$taxonomy    = $term->taxonomy;
 		$concept_uri = self::concept_uri( $taxonomy, $term->slug );
 		$scheme_uri  = self::scheme_uri( $taxonomy );
-		$lang        = WP_SKOS_Settings::get_default_language();
+		$lang        = WPSKOS_Settings::get_default_language();
 		$pref_labels = self::get_pref_labels( $term );
 
 		$data = array(
@@ -732,7 +732,7 @@ class WP_SKOS_Builder {
 		$term_ids = array();
 		if ( function_exists( 'htax_get_expanded_term_ids' ) ) {
 			// Pass true to also fold in terms that redirect to this one, matching
-			// WP_SKOS_Document_Search::expand_term_ids() — both are documented as
+			// WPSKOS_Document_Search::expand_term_ids() — both are documented as
 			// reflecting "the concept's archive," so they must expand identically.
 			$term_ids = htax_get_expanded_term_ids( $term->term_id, true );
 		}
@@ -844,7 +844,7 @@ class WP_SKOS_Builder {
 			$top_terms
 		);
 
-		$lang = WP_SKOS_Settings::get_default_language();
+		$lang = WPSKOS_Settings::get_default_language();
 
 		return array(
 			'@type'             => 'skos:ConceptScheme',
@@ -932,7 +932,7 @@ class WP_SKOS_Builder {
 			if ( ! ( $member instanceof WP_Term ) ) {
 				continue;
 			}
-			if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $member->taxonomy ) ) {
+			if ( ! WPSKOS_Settings::is_taxonomy_enabled( $member->taxonomy ) ) {
 				continue;
 			}
 			// HyperTaxonomy ignores a taxonomy's stored memberships while its Group Assignment is off.
@@ -1162,9 +1162,9 @@ foreach ( array(
 	'htax_term_uris_changed',
 	'htax_term_locations_changed',
 ) as $wpskos_hook ) {
-	add_action( $wpskos_hook, array( 'WP_SKOS_Builder', 'flush_cache' ), 10, 0 );
+	add_action( $wpskos_hook, array( 'WPSKOS_Builder', 'flush_cache' ), 10, 0 );
 }
 unset( $wpskos_hook );
 
 // dct:modified is computed live from the archive's most recent post-modified date —
-// see WP_SKOS_Builder::get_modified_date() / inject_modified(). No term meta is stored.
+// see WPSKOS_Builder::get_modified_date() / inject_modified(). No term meta is stored.

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WP_SKOS_Settings {
+class WPSKOS_Settings {
 
 	const OPTION = 'wpskos_settings';
 
@@ -190,7 +190,9 @@ class WP_SKOS_Settings {
 function wpskos_admin_justify_help_text() {
 	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 	if ( in_array( $page, array( 'wp-skos' ), true ) ) {
-		echo '<style>.wrap p:not(td p):not(th p):not(.notice p), .wrap p:has(+ table) { text-align: justify; hyphens: none; }</style>';
+		wp_register_style( 'wpskos-admin-help-text', false, array(), WPSKOS_VERSION );
+		wp_add_inline_style( 'wpskos-admin-help-text', '.wrap p:not(td p):not(th p):not(.notice p), .wrap p:has(+ table) { text-align: justify; hyphens: none; }' );
+		wp_print_styles( 'wpskos-admin-help-text' );
 	}
 }
 add_action( 'admin_head', 'wpskos_admin_justify_help_text' );

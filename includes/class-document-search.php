@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WP_SKOS_Document_Search {
+class WPSKOS_Document_Search {
 
 	/**
 	 * Hook the REST route registration.
@@ -105,7 +105,7 @@ class WP_SKOS_Document_Search {
 		// documents reveal them and results are the same for everyone. A no-op when
 		// HyperTaxonomy isn't active.
 		foreach ( $resolved_terms as $uri => $term ) {
-			if ( WP_SKOS_Builder::is_hidden( $term->term_id ) ) {
+			if ( WPSKOS_Builder::is_hidden( $term->term_id ) ) {
 				unset( $resolved_terms[ $uri ] );
 			}
 		}
@@ -411,7 +411,7 @@ class WP_SKOS_Document_Search {
 		$taxonomy = sanitize_key( rawurldecode( $m[1] ) );
 		$slug     = rawurldecode( $m[2] );
 
-		if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $taxonomy ) ) {
+		if ( ! WPSKOS_Settings::is_taxonomy_enabled( $taxonomy ) ) {
 			return null;
 		}
 
@@ -606,7 +606,7 @@ class WP_SKOS_Document_Search {
 	}
 
 	/**
-	 * Convert a normalized peer post (tc_external_normalize_post shape, as returned
+	 * Convert a normalized peer post (tconn_external_normalize_post shape, as returned
 	 * through HT's htax_get_term_external_posts) into a foaf:Document JSON-LD array.
 	 *
 	 * @since 1.0.0
