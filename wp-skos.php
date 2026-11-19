@@ -6,7 +6,7 @@
  * Version:     1.0.0
  * Author:      Eugene Weinstein
  * Author URI:  https://hypertaxonomy.org
- * Requires at least: 5.0
+ * Requires at least: 5.3
  * Requires PHP: 7.4
  * License:     GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -68,12 +68,12 @@ function wpskos_action_links( array $links ): array {
  * @since 1.0.0
  */
 function wpskos_init(): void {
-	WP_SKOS_Settings::register();
-	WP_SKOS_Skosmos_API::register();
-	WP_SKOS_Document_Search::register();
-	WP_SKOS_Concept_URI::register();
-	WP_SKOS_Agent_Discovery::register();
-	WP_SKOS_Export::register();
+	WPSKOS_Settings::register();
+	WPSKOS_Skosmos_API::register();
+	WPSKOS_Document_Search::register();
+	WPSKOS_Concept_URI::register();
+	WPSKOS_Agent_Discovery::register();
+	WPSKOS_Export::register();
 }
 
 /**
@@ -107,8 +107,8 @@ register_deactivation_hook( __FILE__, 'wpskos_deactivate' );
  * @since 1.0.0
  */
 function wpskos_activate(): void {
-	WP_SKOS_Concept_URI::add_rewrite_rules();
-	WP_SKOS_Skosmos_API::add_rewrite_rules();
+	WPSKOS_Concept_URI::add_rewrite_rules();
+	WPSKOS_Skosmos_API::add_rewrite_rules();
 	flush_rewrite_rules();
 }
 

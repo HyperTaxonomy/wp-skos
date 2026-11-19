@@ -18,7 +18,7 @@ Exposes WordPress taxonomies as SKOS concept schemes through concept URIs and a 
 
 ## Requirements
 
-- WordPress 5.0+
+- WordPress 5.3+
 - PHP 7.4+
 - Pretty permalinks enabled
 

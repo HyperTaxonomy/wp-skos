@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * @since 1.0.0
  */
-class WP_SKOS_Export {
+class WPSKOS_Export {
 
 	/** Terms loaded per query, so a large taxonomy doesn't load every term object at once. */
 	const BATCH_SIZE = 200;
@@ -51,12 +51,12 @@ class WP_SKOS_Export {
 	 * @since 1.0.0
 	 */
 	public static function dispatch(): void {
-		if ( ! is_404() || ! preg_match( '#^/wp-skos/export/([a-z0-9_-]+)\.jsonld$#', WP_SKOS_Agent_Discovery::request_path(), $matches ) ) {
+		if ( ! is_404() || ! preg_match( '#^/wp-skos/export/([a-z0-9_-]+)\.jsonld$#', WPSKOS_Agent_Discovery::request_path(), $matches ) ) {
 			return;
 		}
 
 		$taxonomy = $matches[1];
-		if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $taxonomy ) || ! taxonomy_exists( $taxonomy ) ) {
+		if ( ! WPSKOS_Settings::is_taxonomy_enabled( $taxonomy ) || ! taxonomy_exists( $taxonomy ) ) {
 			return;
 		}
 
@@ -82,7 +82,7 @@ class WP_SKOS_Export {
 			status_header( 503 );
 			header( 'Retry-After: 60' );
 			header( 'Cache-Control: no-store' );
-			WP_SKOS_Builder::error_response( __( 'An export of this vocabulary is already running. Try again shortly.', 'wp-skos' ), 503 );
+			WPSKOS_Builder::error_response( __( 'An export of this vocabulary is already running. Try again shortly.', 'wp-skos' ), 503 );
 		}
 
 		status_header( 200 );
@@ -139,10 +139,10 @@ class WP_SKOS_Export {
 
 		$flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
-		echo '{"@context":' . wp_json_encode( WP_SKOS_Builder::jsonld_context(), $flags ) . ',"@graph":[';
+		echo '{"@context":' . wp_json_encode( WPSKOS_Builder::jsonld_context(), $flags ) . ',"@graph":[';
 
 		$first  = true;
-		$scheme = WP_SKOS_Builder::build_scheme( $taxonomy );
+		$scheme = WPSKOS_Builder::build_scheme( $taxonomy );
 		if ( null !== $scheme ) {
 			echo wp_json_encode( $scheme, $flags );
 			$first = false;
@@ -190,12 +190,12 @@ class WP_SKOS_Export {
 	 * @return array|null Null when the term is hidden.
 	 */
 	private static function concept( WP_Term $term ): ?array {
-		$data = WP_SKOS_Builder::build_concept( $term );
+		$data = WPSKOS_Builder::build_concept( $term );
 		if ( null === $data ) {
 			return null;
 		}
 
-		$response = WP_SKOS_Builder::inject_modified( array( '@graph' => array( $data ) ), $term );
+		$response = WPSKOS_Builder::inject_modified( array( '@graph' => array( $data ) ), $term );
 
 		return $response['@graph'][0] ?? null;
 	}

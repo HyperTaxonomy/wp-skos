@@ -5,8 +5,21 @@ nav_order: 2
 ---
 
 # AI agents and export
+{: .no_toc }
 
-WP-SKOS tells AI agents and other API clients how to use your vocabularies, with no setup. It generates two documents from the taxonomies enabled in **Settings → WP-SKOS**:
+WP-SKOS tells AI agents and other API clients how to use your vocabularies, with no setup.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## What it publishes
+
+It generates two documents from the taxonomies enabled in **Settings&nbsp;→ WP-SKOS**:
 
 | URL | What it is |
 |---|---|

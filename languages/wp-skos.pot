@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-18 17:52-0500\n"
+"POT-Creation-Date: 2026-11-25 12:52-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,8 +62,8 @@ msgstr ""
 
 #: includes/class-settings.php:102
 msgid ""
-"BCP 47 language tag applied to prefLabel when no multilingual plugin is "
-"active (e.g. <code>en</code>, <code>fr</code>)."
+"BCP 47 language tag for terms with no language of their own, and for "
+"vocabulary titles (e.g. <code>en</code>, <code>fr</code>)."
 msgstr ""
 
 #: includes/class-settings.php:115

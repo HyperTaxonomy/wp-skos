@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WP_SKOS_Settings {
+class WPSKOS_Settings {
 
 	const OPTION = 'wpskos_settings';
 
@@ -99,7 +99,7 @@ class WP_SKOS_Settings {
 			esc_attr( $lang )
 		);
 		echo '<p class="description">' . wp_kses(
-			__( 'BCP 47 language tag applied to prefLabel when no multilingual plugin is active (e.g. <code>en</code>, <code>fr</code>).', 'wp-skos' ),
+			__( 'BCP 47 language tag for terms with no language of their own, and for vocabulary titles (e.g. <code>en</code>, <code>fr</code>).', 'wp-skos' ),
 			array( 'code' => array() )
 		) . '</p>';
 	}
@@ -190,7 +190,9 @@ class WP_SKOS_Settings {
 function wpskos_admin_justify_help_text() {
 	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 	if ( in_array( $page, array( 'wp-skos' ), true ) ) {
-		echo '<style>.wrap p:not(td p):not(th p):not(.notice p), .wrap p:has(+ table) { text-align: justify; hyphens: none; }</style>';
+		wp_register_style( 'wpskos-admin-help-text', false, array(), WPSKOS_VERSION );
+		wp_add_inline_style( 'wpskos-admin-help-text', '.wrap p:not(td p):not(th p):not(.notice p), .wrap p:has(+ table) { text-align: justify; hyphens: none; }' );
+		wp_print_styles( 'wpskos-admin-help-text' );
 	}
 }
 add_action( 'admin_head', 'wpskos_admin_justify_help_text' );

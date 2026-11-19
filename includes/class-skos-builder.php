@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WP_SKOS_Builder {
+class WPSKOS_Builder {
 
 	/**
 	 * How long concept and scheme documents stay cached, in seconds.
@@ -124,8 +124,7 @@ class WP_SKOS_Builder {
 	 * Build prefLabel map keyed by BCP 47 language tag.
 	 *
 	 * Returns at minimum one entry using the site's default language.
-	 * Adds translated labels from Polylang, WPML, or HT Language Tools
-	 * when available.
+	 * Adds translated labels from Polylang or WPML when available.
 	 *
 	 * @since 1.0.0
 	 * @return array<string, string>  e.g. ['en' => 'React', 'fr' => 'Réagir']
@@ -169,30 +168,12 @@ class WP_SKOS_Builder {
 			}
 		}
 
-		// HT Language Tools: 'translation' relationship type.
-		if ( function_exists( 'htax_get_related_terms' ) && function_exists( 'htax_get_reverse_related_terms' ) ) {
-			$reg_types = function_exists( 'htax_get_registered_relationship_types' )
-				? htax_get_registered_relationship_types( true )
-				: array();
-
-			if ( isset( $reg_types['translation'] ) ) {
-				$translations = htax_get_related_terms( $term->term_id, 'translation' )
-					+ htax_get_reverse_related_terms( $term->term_id, 'translation' );
-
-				foreach ( $translations as $trans_id => $t ) {
-					$lang = (string) get_term_meta( (int) $trans_id, '_lang', true );
-					if ( $lang !== '' && $lang !== $own_lang ) {
-						$labels[ $lang ] = $t->name;
-					}
-				}
-			}
-		}
-
 		return $labels;
 	}
 
 	/**
-	 * Detect the BCP 47 language tag for a term.
+	 * Detect the BCP 47 language tag for a term: its Polylang or WPML language, else the
+	 * default language from Settings.
 	 *
 	 * @since 1.0.0
 	 */
@@ -203,11 +184,16 @@ class WP_SKOS_Builder {
 				return sanitize_key( $lang );
 			}
 		}
-		$meta_lang = (string) get_term_meta( $term->term_id, '_lang', true );
-		if ( $meta_lang !== '' ) {
-			return sanitize_key( $meta_lang );
+		if ( defined( 'ICL_SYSLANGS' ) ) {
+			$lang = apply_filters( 'wpml_element_language_code', null, array(
+				'element_id'   => $term->term_taxonomy_id,
+				'element_type' => 'tax_' . $term->taxonomy,
+			) );
+			if ( is_string( $lang ) && $lang !== '' ) {
+				return sanitize_key( $lang );
+			}
 		}
-		return WP_SKOS_Settings::get_default_language();
+		return WPSKOS_Settings::get_default_language();
 	}
 
 	// -------------------------------------------------------------------------
@@ -557,7 +543,6 @@ class WP_SKOS_Builder {
 		$taxonomy    = $term->taxonomy;
 		$concept_uri = self::concept_uri( $taxonomy, $term->slug );
 		$scheme_uri  = self::scheme_uri( $taxonomy );
-		$lang        = WP_SKOS_Settings::get_default_language();
 		$pref_labels = self::get_pref_labels( $term );
 
 		$data = array(
@@ -572,7 +557,7 @@ class WP_SKOS_Builder {
 			// Plain-text descriptions become skos:definition; HTML gets scopeNote.
 			$is_plain = ( $term->description === wp_strip_all_tags( $term->description ) );
 			$prop     = $is_plain ? 'skos:definition' : 'skos:scopeNote';
-			$data[ $prop ] = array( '@value' => wp_strip_all_tags( $term->description ), '@language' => $lang );
+			$data[ $prop ] = array( '@value' => wp_strip_all_tags( $term->description ), '@language' => self::term_language( $term ) );
 		}
 
 		// Hierarchy. Hidden terms (HT) are omitted for every viewer so the hierarchy
@@ -732,7 +717,7 @@ class WP_SKOS_Builder {
 		$term_ids = array();
 		if ( function_exists( 'htax_get_expanded_term_ids' ) ) {
 			// Pass true to also fold in terms that redirect to this one, matching
-			// WP_SKOS_Document_Search::expand_term_ids() — both are documented as
+			// WPSKOS_Document_Search::expand_term_ids() — both are documented as
 			// reflecting "the concept's archive," so they must expand identically.
 			$term_ids = htax_get_expanded_term_ids( $term->term_id, true );
 		}
@@ -844,7 +829,7 @@ class WP_SKOS_Builder {
 			$top_terms
 		);
 
-		$lang = WP_SKOS_Settings::get_default_language();
+		$lang = WPSKOS_Settings::get_default_language();
 
 		return array(
 			'@type'             => 'skos:ConceptScheme',
@@ -932,7 +917,7 @@ class WP_SKOS_Builder {
 			if ( ! ( $member instanceof WP_Term ) ) {
 				continue;
 			}
-			if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $member->taxonomy ) ) {
+			if ( ! WPSKOS_Settings::is_taxonomy_enabled( $member->taxonomy ) ) {
 				continue;
 			}
 			// HyperTaxonomy ignores a taxonomy's stored memberships while its Group Assignment is off.
@@ -1142,6 +1127,9 @@ class WP_SKOS_Builder {
 // Anything that can change a concept document, including a neighbor's. Some of these
 // are HyperTaxonomy's, and only fire when it's active; a HyperTaxonomy settings save covers
 // its feature flags (such as Group Assignment), which decide what HyperTaxonomy reports.
+// A merge deletes its source terms inside a database transaction, so delete_term flushes
+// before the merge is committed: with a persistent object cache, a document built in that
+// moment would hold the old data. htax_after_merge_terms flushes again once it is committed.
 foreach ( array(
 	'saved_term',
 	'delete_term',
@@ -1158,13 +1146,14 @@ foreach ( array(
 	'htax_relationship_deleted',
 	'htax_redirect_changed',
 	'htax_redirect_removed',
+	'htax_after_merge_terms',
 	'htax_term_visibility_changed',
 	'htax_term_uris_changed',
 	'htax_term_locations_changed',
 ) as $wpskos_hook ) {
-	add_action( $wpskos_hook, array( 'WP_SKOS_Builder', 'flush_cache' ), 10, 0 );
+	add_action( $wpskos_hook, array( 'WPSKOS_Builder', 'flush_cache' ), 10, 0 );
 }
 unset( $wpskos_hook );
 
 // dct:modified is computed live from the archive's most recent post-modified date —
-// see WP_SKOS_Builder::get_modified_date() / inject_modified(). No term meta is stored.
+// see WPSKOS_Builder::get_modified_date() / inject_modified(). No term meta is stored.

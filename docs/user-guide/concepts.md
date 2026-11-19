@@ -6,7 +6,7 @@ nav_order: 1
 
 # Concepts & Data Model
 
-Each taxonomy you enable in **Settings → WP-SKOS** becomes a SKOS concept scheme, and each of its terms a concept with its own URI. This page shows what each part of a term becomes. For the exact responses, see [Concept URIs & JSON-LD](../developer-reference/concept-uris.html).
+Each taxonomy you enable in **Settings&nbsp;→ WP-SKOS** becomes a SKOS concept scheme, and each of its terms a concept with its own URI. This page shows what each part of a term becomes. For the exact responses, see [Concept URIs & JSON-LD](../developer-reference/concept-uris.html).
 
 ## Data model
 
@@ -50,6 +50,8 @@ For custom types, `{site}` is this site, or the site a type was synced from thro
 
 URIs are built from the term's taxonomy and slug: `/wp-skos/concept/{taxonomy}/{slug}`. Changing a term's name leaves its URI alone, but changing its slug changes the URI, and the old one returns 404. WP-SKOS doesn't keep old URIs working across slug changes. The term archive URL (a WordPress permalink) is exposed as `rdfs:seeAlso` and is the appropriate value to present in search results or UI links.
 
+When HyperTaxonomy [merges or converts terms](https://hypertaxonomy.org/hypertaxonomy/user-guide/merge-convert.html) with redirect stubs, each stub keeps the old term's slug, so the old concept URI keeps working: its document is marked `owl:deprecated`, with `dct:isReplacedBy` pointing to the target or new concept, and browsers are sent on to the target's archive. Without redirect stubs, the old term is deleted and its concept URI returns 404, with nothing pointing to the replacement. Keep redirect stubs on when other vocabularies or sites link to your concept URIs.
+
 If a term in vocabulary A has the same slug as a term in vocabulary B, they are distinct concepts with distinct URIs. The taxonomy is part of the concept URI, so each slug always resolves within its own taxonomy and same-slug terms in different taxonomies never collide.
 
 ## Multilingual labels
@@ -63,4 +65,4 @@ When a multilingual plugin is active, `skos:prefLabel` is an array with one entr
 ]
 ```
 
-WP-SKOS builds the label map in `get_pref_labels( WP_Term $term )`, which detects multilingual plugins automatically: **Polylang** (via `pll_get_term_translations()`) and **WPML** (via the `wpml_get_element_translations` filter). Sites with no multilingual plugin get a single-entry array using the language tag from Settings → WP-SKOS.
+WP-SKOS builds the label map in `get_pref_labels( WP_Term $term )`, which detects multilingual plugins automatically: **Polylang** (via `pll_get_term_translations()`) and **WPML** (via the `wpml_get_element_translations` filter). Sites with no multilingual plugin get a single-entry array using the language tag from Settings&nbsp;→ WP-SKOS.

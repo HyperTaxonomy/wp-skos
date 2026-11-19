@@ -1,8 +1,8 @@
-=== WP-SKOS – Linked Data for Taxonomies – SKOS concept schemes, concept URIs, JSON-LD export and a Skosmos-compatible REST API ===
+=== WP-SKOS – Linked Data for Taxonomies ===
 Tags: skos, linked data, taxonomy, vocabulary, semantic web, skosmos, rdf, json-ld
 Contributors: eugenevv
 Author: Eugene Weinstein
-Requires at least: 5.0
+Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.0.0
@@ -91,7 +91,7 @@ Rewrite rules are flushed automatically on activation and deactivation. If conce
 
 = Requirements =
 
-* WordPress 5.0 or later
+* WordPress 5.3 or later
 * PHP 7.4 or later
 * Pretty permalinks enabled (any structure other than plain)
 

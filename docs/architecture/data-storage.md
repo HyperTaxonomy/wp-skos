@@ -24,7 +24,3 @@ WP-SKOS has no tables and writes no term or post meta. It stores its settings an
 | `wpskos_sch_{generation}_{md5(taxonomy)}` | A concept scheme document. |
 
 Both last one day.
-
-## Meta that WP-SKOS reads
-
-`_lang` term meta, when a multilingual plugin stores a term's language there, sets the language of the term's labels.

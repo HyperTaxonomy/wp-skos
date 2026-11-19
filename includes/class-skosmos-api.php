@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class WP_SKOS_Skosmos_API {
+class WPSKOS_Skosmos_API {
 
 	/**
 	 * Hook the API's rewrite rule, query var and request handler.
@@ -82,8 +82,8 @@ class WP_SKOS_Skosmos_API {
 
 		// /{vocab}/...
 		$vocab = sanitize_key( $first );
-		if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $vocab ) ) {
-			WP_SKOS_Builder::error_response( __( 'Unknown vocabulary', 'wp-skos' ), 404 );
+		if ( ! WPSKOS_Settings::is_taxonomy_enabled( $vocab ) ) {
+			WPSKOS_Builder::error_response( __( 'Unknown vocabulary', 'wp-skos' ), 404 );
 		}
 
 		$endpoint = $parts[1] ?? '';
@@ -102,7 +102,7 @@ class WP_SKOS_Skosmos_API {
 				self::data( $vocab );
 				break;
 			default:
-				WP_SKOS_Builder::error_response( __( 'Unknown endpoint', 'wp-skos' ), 404 );
+				WPSKOS_Builder::error_response( __( 'Unknown endpoint', 'wp-skos' ), 404 );
 		}
 	}
 
@@ -116,10 +116,10 @@ class WP_SKOS_Skosmos_API {
 	 * @since 1.0.0
 	 */
 	private static function vocabularies(): void {
-		$default_lang = WP_SKOS_Settings::get_default_language();
+		$default_lang = WPSKOS_Settings::get_default_language();
 		$vocabs       = array();
 
-		foreach ( WP_SKOS_Settings::get_enabled_taxonomies() as $taxonomy ) {
+		foreach ( WPSKOS_Settings::get_enabled_taxonomies() as $taxonomy ) {
 			$tax_obj = get_taxonomy( $taxonomy );
 			if ( ! $tax_obj ) {
 				continue;
@@ -148,18 +148,18 @@ class WP_SKOS_Skosmos_API {
 	private static function vocab_info( string $vocab ): void {
 		$tax_obj = get_taxonomy( $vocab );
 		if ( ! $tax_obj ) {
-			WP_SKOS_Builder::error_response( __( 'Taxonomy not found', 'wp-skos' ), 404 );
+			WPSKOS_Builder::error_response( __( 'Taxonomy not found', 'wp-skos' ), 404 );
 		}
 
-		$scheme_uri = WP_SKOS_Builder::scheme_uri( $vocab );
+		$scheme_uri = WPSKOS_Builder::scheme_uri( $vocab );
 
 		self::json_response( array(
 			'@context'        => self::skosmos_context(),
 			'uri'             => self::api_base( $vocab ),
 			'id'              => $vocab,
 			'title'           => $tax_obj->label,
-			'defaultLanguage' => WP_SKOS_Settings::get_default_language(),
-			'languages'       => array( WP_SKOS_Settings::get_default_language() ),
+			'defaultLanguage' => WPSKOS_Settings::get_default_language(),
+			'languages'       => array( WPSKOS_Settings::get_default_language() ),
 			'conceptschemes'  => array(
 				array(
 					'uri'       => $scheme_uri,
@@ -175,7 +175,7 @@ class WP_SKOS_Skosmos_API {
 	 * @since 1.0.0
 	 */
 	private static function top_concepts( string $vocab ): void {
-		$lang = sanitize_key( $_GET['lang'] ?? WP_SKOS_Settings::get_default_language() );
+		$lang = sanitize_key( $_GET['lang'] ?? WPSKOS_Settings::get_default_language() );
 
 		$terms = get_terms( array(
 			'taxonomy'   => $vocab,
@@ -192,7 +192,7 @@ class WP_SKOS_Skosmos_API {
 		// visible roots in one batched query (avoids an N+1 of one children lookup per root).
 		$visible = array();
 		foreach ( $terms as $term ) {
-			if ( WP_SKOS_Builder::is_hidden( $term->term_id ) ) {
+			if ( WPSKOS_Builder::is_hidden( $term->term_id ) ) {
 				continue;
 			}
 			$visible[] = $term;
@@ -203,7 +203,7 @@ class WP_SKOS_Skosmos_API {
 		$top = array();
 		foreach ( $visible as $term ) {
 			$top[] = array(
-				'uri'         => WP_SKOS_Builder::concept_uri( $vocab, $term->slug ),
+				'uri'         => WPSKOS_Builder::concept_uri( $vocab, $term->slug ),
 				'prefLabel'   => self::pref_label_for_lang( $term, $lang ),
 				'hasChildren' => $child_map[ $term->term_id ] ?? false,
 			);
@@ -212,7 +212,7 @@ class WP_SKOS_Skosmos_API {
 		self::json_response( array(
 			'@context'    => self::skosmos_context(),
 			'uri'         => self::api_base( $vocab ),
-			'scheme'      => WP_SKOS_Builder::scheme_uri( $vocab ),
+			'scheme'      => WPSKOS_Builder::scheme_uri( $vocab ),
 			'topconcepts' => $top,
 		) );
 	}
@@ -226,10 +226,10 @@ class WP_SKOS_Skosmos_API {
 	 */
 	private static function lookup( string $vocab ): void {
 		$label = sanitize_text_field( wp_unslash( $_GET['label'] ?? '' ) );
-		$lang  = sanitize_key( $_GET['lang'] ?? WP_SKOS_Settings::get_default_language() );
+		$lang  = sanitize_key( $_GET['lang'] ?? WPSKOS_Settings::get_default_language() );
 
 		if ( $label === '' ) {
-			WP_SKOS_Builder::error_response( __( 'Missing label parameter', 'wp-skos' ), 400 );
+			WPSKOS_Builder::error_response( __( 'Missing label parameter', 'wp-skos' ), 400 );
 		}
 
 		$terms = get_terms( array(
@@ -245,11 +245,11 @@ class WP_SKOS_Skosmos_API {
 
 		$results = array();
 		foreach ( $terms as $term ) {
-			if ( WP_SKOS_Builder::is_hidden( $term->term_id ) ) {
+			if ( WPSKOS_Builder::is_hidden( $term->term_id ) ) {
 				continue;
 			}
 			$results[] = array(
-				'uri'       => WP_SKOS_Builder::concept_uri( $vocab, $term->slug ),
+				'uri'       => WPSKOS_Builder::concept_uri( $vocab, $term->slug ),
 				'type'      => array( 'skos:Concept' ),
 				'prefLabel' => self::pref_label_for_lang( $term, $lang ),
 				'lang'      => $lang,
@@ -272,19 +272,19 @@ class WP_SKOS_Skosmos_API {
 	private static function data( string $vocab ): void {
 		$uri = esc_url_raw( wp_unslash( $_GET['uri'] ?? '' ) );
 		if ( $uri === '' ) {
-			WP_SKOS_Builder::error_response( __( 'Missing uri parameter', 'wp-skos' ), 400 );
+			WPSKOS_Builder::error_response( __( 'Missing uri parameter', 'wp-skos' ), 400 );
 		}
 
-		$scheme_uri = WP_SKOS_Builder::scheme_uri( $vocab );
+		$scheme_uri = WPSKOS_Builder::scheme_uri( $vocab );
 
 		// ConceptScheme URI.
 		if ( rtrim( $uri, '/' ) === rtrim( $scheme_uri, '/' ) ) {
-			$data = WP_SKOS_Builder::build_scheme( $vocab );
+			$data = WPSKOS_Builder::build_scheme( $vocab );
 			if ( null === $data ) {
-				WP_SKOS_Builder::error_response( __( 'Scheme not found', 'wp-skos' ), 404 );
+				WPSKOS_Builder::error_response( __( 'Scheme not found', 'wp-skos' ), 404 );
 			}
-			WP_SKOS_Builder::jsonld_response( array(
-				'@context' => WP_SKOS_Builder::jsonld_context(),
+			WPSKOS_Builder::jsonld_response( array(
+				'@context' => WPSKOS_Builder::jsonld_context(),
 				'@graph'   => array( $data ),
 			) );
 		}
@@ -299,28 +299,28 @@ class WP_SKOS_Skosmos_API {
 		}
 
 		if ( $slug === '' || $taxonomy === '' ) {
-			WP_SKOS_Builder::error_response( __( 'URI not recognized', 'wp-skos' ), 400 );
+			WPSKOS_Builder::error_response( __( 'URI not recognized', 'wp-skos' ), 400 );
 		}
 
 		// The URI is authoritative across taxonomies, but only enabled taxonomies
 		// are ever exposed — never serve a concept from a taxonomy the admin did
 		// not enable (mirrors the guard in the concept-URI and document-search resolvers).
-		if ( ! WP_SKOS_Settings::is_taxonomy_enabled( $taxonomy ) ) {
-			WP_SKOS_Builder::error_response( __( 'URI not recognized', 'wp-skos' ), 404 );
+		if ( ! WPSKOS_Settings::is_taxonomy_enabled( $taxonomy ) ) {
+			WPSKOS_Builder::error_response( __( 'URI not recognized', 'wp-skos' ), 404 );
 		}
 
 		// Resolve the term within the taxonomy embedded in the URI, not solely
 		// the requested vocab — the URI is the authoritative identifier.
 		$term = get_term_by( 'slug', $slug, $taxonomy );
 		if ( ! ( $term instanceof WP_Term ) ) {
-			WP_SKOS_Builder::error_response( __( 'Concept not found', 'wp-skos' ), 404 );
+			WPSKOS_Builder::error_response( __( 'Concept not found', 'wp-skos' ), 404 );
 		}
 
-		$document = WP_SKOS_Builder::concept_document( $term );
+		$document = WPSKOS_Builder::concept_document( $term );
 		if ( null === $document ) {
-			WP_SKOS_Builder::error_response( __( 'Concept not found', 'wp-skos' ), 404 );
+			WPSKOS_Builder::error_response( __( 'Concept not found', 'wp-skos' ), 404 );
 		}
-		WP_SKOS_Builder::jsonld_response( $document );
+		WPSKOS_Builder::jsonld_response( $document );
 	}
 
 	/**
@@ -333,11 +333,11 @@ class WP_SKOS_Skosmos_API {
 	private static function search(): void {
 		$query   = sanitize_text_field( wp_unslash( $_GET['query'] ?? '' ) );
 		$vocab   = sanitize_key( $_GET['vocab'] ?? '' );
-		$lang    = sanitize_key( $_GET['lang'] ?? WP_SKOS_Settings::get_default_language() );
+		$lang    = sanitize_key( $_GET['lang'] ?? WPSKOS_Settings::get_default_language() );
 		$maxhits = max( 1, min( 200, intval( wp_unslash( $_GET['maxhits'] ?? 50 ) ) ) );
 
 		if ( $query === '' ) {
-			WP_SKOS_Builder::error_response( __( 'Missing query parameter', 'wp-skos' ), 400 );
+			WPSKOS_Builder::error_response( __( 'Missing query parameter', 'wp-skos' ), 400 );
 		}
 
 		// Strip trailing wildcard — WP doesn't need it.
@@ -346,13 +346,13 @@ class WP_SKOS_Skosmos_API {
 		// An unknown/disabled vocab is an error here, matching dispatch()'s handling
 		// of a bad vocab in the path — it must not silently fall back to searching
 		// every enabled taxonomy instead of the one the caller explicitly asked for.
-		if ( $vocab !== '' && ! WP_SKOS_Settings::is_taxonomy_enabled( $vocab ) ) {
-			WP_SKOS_Builder::error_response( __( 'Unknown vocabulary', 'wp-skos' ), 404 );
+		if ( $vocab !== '' && ! WPSKOS_Settings::is_taxonomy_enabled( $vocab ) ) {
+			WPSKOS_Builder::error_response( __( 'Unknown vocabulary', 'wp-skos' ), 404 );
 		}
 
 		$taxonomies = $vocab !== ''
 			? array( $vocab )
-			: WP_SKOS_Settings::get_enabled_taxonomies();
+			: WPSKOS_Settings::get_enabled_taxonomies();
 
 		$results = array();
 
@@ -369,11 +369,11 @@ class WP_SKOS_Skosmos_API {
 			}
 
 			foreach ( $terms as $term ) {
-				if ( WP_SKOS_Builder::is_hidden( $term->term_id ) ) {
+				if ( WPSKOS_Builder::is_hidden( $term->term_id ) ) {
 					continue;
 				}
 				$results[] = array(
-					'uri'       => WP_SKOS_Builder::concept_uri( $taxonomy, $term->slug ),
+					'uri'       => WPSKOS_Builder::concept_uri( $taxonomy, $term->slug ),
 					'type'      => array( 'skos:Concept' ),
 					'prefLabel' => self::pref_label_for_lang( $term, $lang ),
 					'lang'      => $lang,
@@ -483,8 +483,8 @@ class WP_SKOS_Skosmos_API {
 	 * @since 1.0.0
 	 */
 	private static function pref_label_for_lang( WP_Term $term, string $lang ): string {
-		$labels = WP_SKOS_Builder::get_pref_labels( $term );
-		return $labels[ $lang ] ?? $labels[ WP_SKOS_Settings::get_default_language() ] ?? $term->name;
+		$labels = WPSKOS_Builder::get_pref_labels( $term );
+		return $labels[ $lang ] ?? $labels[ WPSKOS_Settings::get_default_language() ] ?? $term->name;
 	}
 
 	/**

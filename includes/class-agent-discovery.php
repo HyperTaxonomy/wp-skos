@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * @since 1.0.0
  */
-class WP_SKOS_Agent_Discovery {
+class WPSKOS_Agent_Discovery {
 
 	const PLUGIN_GUIDE_PATH = '/wp-skos/llms.txt';
 	const ROOT_GUIDE_PATH   = '/llms.txt';
@@ -52,7 +52,7 @@ class WP_SKOS_Agent_Discovery {
 		}
 
 		// Concept and scheme URIs need pretty permalinks, so there is nothing to describe without them.
-		if ( '' === (string) get_option( 'permalink_structure' ) || ! WP_SKOS_Settings::get_enabled_taxonomies() ) {
+		if ( '' === (string) get_option( 'permalink_structure' ) || ! WPSKOS_Settings::get_enabled_taxonomies() ) {
 			return;
 		}
 
@@ -153,7 +153,7 @@ class WP_SKOS_Agent_Discovery {
 		$site    = self::one_line( get_bloginfo( 'name' ) );
 		$skosmos = home_url( '/' . WPSKOS_SKOSMOS_PREFIX );
 		$posts   = rest_url( 'wp-skos/v1/posts' );
-		$enabled = WP_SKOS_Settings::get_enabled_taxonomies();
+		$enabled = WPSKOS_Settings::get_enabled_taxonomies();
 
 		// Link to a real export; dispatch() has already confirmed one taxonomy is enabled.
 		$first_taxonomy = (string) reset( $enabled );
@@ -177,7 +177,7 @@ class WP_SKOS_Agent_Discovery {
 			$lines[] = sprintf(
 				'- [%s](%s): Concept scheme for `%s`, with its top concepts. Use `vocab=%s` to search only this vocabulary.',
 				self::one_line( $tax_obj->label ),
-				WP_SKOS_Builder::scheme_uri( $taxonomy ),
+				WPSKOS_Builder::scheme_uri( $taxonomy ),
 				$taxonomy,
 				$taxonomy
 			);
@@ -191,7 +191,7 @@ class WP_SKOS_Agent_Discovery {
 				'',
 				'- [List vocabularies](' . $skosmos . '/vocabularies): All enabled vocabularies.',
 				'- [Search concepts](' . $skosmos . '/search?query=example): Label search. Parameters: `query`, optional `vocab`, `lang`, and `maxhits` (default 50, maximum 200).',
-				'- [Export a vocabulary](' . WP_SKOS_Export::url( $first_taxonomy ) . '): Every concept in one vocabulary as a single JSON-LD file, for building a local index. Use `/wp-skos/export/{taxonomy}.jsonld` for the other vocabularies. The file can be large, so prefer search for individual lookups.',
+				'- [Export a vocabulary](' . WPSKOS_Export::url( $first_taxonomy ) . '): Every concept in one vocabulary as a single JSON-LD file, for building a local index. Use `/wp-skos/export/{taxonomy}.jsonld` for the other vocabularies. The file can be large, so prefer search for individual lookups.',
 				'- [Search documents](' . $posts . '): Posts about one or more concepts, ranked by relevance, as JSON-LD. Requires `concept`, a concept URI. Optional parameters: `operator`, `page`, `per_page`.',
 				'',
 				'## Optional',

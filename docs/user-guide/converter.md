@@ -5,8 +5,19 @@ nav_order: 3
 ---
 
 # Python converter
+{: .no_toc }
 
 Converts a SKOS file (Turtle, RDF/XML, or JSON-LD) into files you can import into [HyperTaxonomy](https://hypertaxonomy.org/hypertaxonomy/user-guide/export-import-migration.html#import) and [TermConnect](https://hypertaxonomy.org/termconnect/user-guide/export-import.html).
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
+
+## Installing and running
 
 The converter isn't part of the plugin download from WordPress.org: get the `skos-converter` folder from the plugin's [GitHub repository](https://github.com/HyperTaxonomy/wp-skos). It needs Python 3.8 or later and `rdflib`.
 
@@ -21,8 +32,8 @@ Other flags: `--lang en` (preferred label language), `--links-output file.json` 
 
 | Output | Contains | Import it at |
 |---|---|---|
-| `ht-import.json` | Terms and hierarchy, redirects, group memberships, mapped relationships, and any custom relationship types they use | **Settings > HyperTaxonomy > Export / Import > Import** |
-| `ht-import-termconnect.json` (only when there are identifiers) | External identifiers from `skos:exactMatch` and `skos:closeMatch` | **Settings > TermConnect > Export / Import**, *after* the HyperTaxonomy file, since the terms must exist first |
+| `ht-import.json` | Terms and hierarchy, redirects, group memberships, mapped relationships, and any custom relationship types they use | **Settings&nbsp;→ HyperTaxonomy&nbsp;→ Export / Import&nbsp;→ Import** |
+| `ht-import-termconnect.json` (only when there are identifiers) | External identifiers from `skos:exactMatch` and `skos:closeMatch` | **Settings&nbsp;→ TermConnect&nbsp;→ Export / Import**, *after* the HyperTaxonomy file, since the terms must exist first |
 | Migration report | Everything that needs a decision (see below) | — |
 
 | SKOS | Imported as |

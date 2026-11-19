@@ -13,24 +13,24 @@ WP-SKOS calls HyperTaxonomy through function-existence-guarded wrappers. It has 
 | HyperTaxonomy function | Purpose |
 |---|---|
 | `htax_is_term_hidden( $term_id )` | Leave hidden terms out of every output for every viewer, the same rule as HyperTaxonomy's REST relationship fields: a hidden concept or group returns 404, and hidden terms are dropped from relationships, Collections, the Skosmos API, the export and document search. Output is then the same for everyone and safe to cache |
-| `htax_get_included_terms( $term )` | Inclusions → `skos:related` and the `wpskos:includes` sub-property |
-| `htax_get_container_terms( $term )` | Containers (reverse inclusions) → `skos:related` and the `wpskos:container` sub-property |
-| `htax_get_synonym_terms( $term )` | Mutual inclusions → `skos:related` and the `wpskos:synonym` sub-property |
-| `htax_get_related_terms( $term_id, $type )` | Custom relationship types (forward) → `skos:related` and typed sub-properties |
-| `htax_get_reverse_related_terms( $term_id, $type )` | Custom relationship types (reverse) → typed `_reverse` sub-properties |
+| `htax_get_included_terms( $term )` | Inclusions&nbsp;→ `skos:related` and the `wpskos:includes` sub-property |
+| `htax_get_container_terms( $term )` | Containers (reverse inclusions)&nbsp;→ `skos:related` and the `wpskos:container` sub-property |
+| `htax_get_synonym_terms( $term )` | Mutual inclusions&nbsp;→ `skos:related` and the `wpskos:synonym` sub-property |
+| `htax_get_related_terms( $term_id, $type )` | Custom relationship types (forward)&nbsp;→ `skos:related` and typed sub-properties |
+| `htax_get_reverse_related_terms( $term_id, $type )` | Custom relationship types (reverse)&nbsp;→ typed `_reverse` sub-properties |
 | `htax_get_registered_relationship_types( true )` | Enumerate custom relationship types and read their metadata (label, symmetry, source site) |
 | `htax_get_redirect_target( $term_id )` | Detect redirect terms for `owl:deprecated` + `dct:isReplacedBy` |
-| `htax_get_term_uris( $term_id )` | External URIs → `skos:closeMatch` (TermConnect populates via `htax_term_uris` filter) |
-| `htax_get_term_locations( $term_id )` | Raw location rows → formatted to `schema:Place` objects inside wp-skos (As the Crow Flies provides the underlying data) |
+| `htax_get_term_uris( $term_id )` | External URIs&nbsp;→ `skos:closeMatch` (TermConnect populates via `htax_term_uris` filter) |
+| `htax_get_term_locations( $term_id )` | Raw location rows&nbsp;→ formatted to `schema:Place` objects inside wp-skos (As the Crow Flies provides the underlying data) |
 | `htax_taxonomy_has_feature( $taxonomy, 'share_locations' )` | Gate `schema:location` on the per-taxonomy **Share list of locations** flag |
-| `htax_get_expanded_term_ids( $term_id, true )` | Concept → expanded post set for the document search tax_query. The `true` flag also folds in terms that redirect to the concept, so a target concept's documents include those tagged with its redirecting (deprecated) terms — matching the relevance index |
+| `htax_get_expanded_term_ids( $term_id, true )` | Concept&nbsp;→ expanded post set for the document search tax_query. The `true` flag also folds in terms that redirect to the concept, so a target concept's documents include those tagged with its redirecting (deprecated) terms — matching the relevance index |
 | `htax_remove_hidden_term_ids( $term_ids )` | Drop hidden terms from the document search's expanded term set, for every viewer |
-| `htax_get_term_external_posts( $term_id, $args )` | Related peer-site documents → `foaf:Document` results in document search; `$args` carries scope hints (platforms, foaf_depth, per_page) (TermConnect populates via `htax_term_external_posts`; HyperTaxonomy gates visibility, so hidden concepts contribute nothing) |
+| `htax_get_term_external_posts( $term_id, $args )` | Related peer-site documents&nbsp;→ `foaf:Document` results in document search; `$args` carries scope hints (platforms, foaf_depth, per_page) (TermConnect populates via `htax_term_external_posts`; HyperTaxonomy gates visibility, so hidden concepts contribute nothing) |
 | `htax_strength_model_sql()` | Restrict document search relevance to the scoring model HyperTaxonomy uses for search |
 
 Relevance ordering in the document search is **not** produced by a HyperTaxonomy function — wp-skos runs a direct SQL query against the `wp_htax_search_terms` index table to sum each candidate post's `strength` over the expanded term set. The index stores strength per scoring model, so the query restricts rows to the model HyperTaxonomy uses for search (`htax_strength_model_sql()`). It also gates `relationship_type` per the concept's taxonomy enabled features (mirroring HyperTaxonomy's own scoring), and combines rows sharing a `(post, term)` pair via noisy-OR (`1 − Π(1 − strength)`, regardless of `source_term` or `relationship_type`) before summing across terms — matching HyperTaxonomy's term-strength scorers exactly: a term reached by only one path is unaffected, while a term reached by several distinct source terms scores higher without the combined value ever reaching the ceiling a single direct row can hit.
 
-Collections exist only while HyperTaxonomy's `group` taxonomy is registered (`taxonomy_exists( 'group' )`); otherwise their URIs return 404. Collection membership (`WP_SKOS_Builder::build_collection()`) is the other direct SQL exception: it queries the `wp_htax_term_relationships` table for `member_of` rows pointing at the group, since HyperTaxonomy exposes no public function for "all terms that declare membership in this group." Both direct queries are guarded with `SHOW TABLES LIKE` before running, so a HyperTaxonomy schema change degrades to an empty result (no relevance ordering / no Collection members) rather than a fatal error.
+Collections exist only while HyperTaxonomy's `group` taxonomy is registered (`taxonomy_exists( 'group' )`); otherwise their URIs return 404. Collection membership (`WPSKOS_Builder::build_collection()`) is the other direct SQL exception: it queries the `wp_htax_term_relationships` table for `member_of` rows pointing at the group, since HyperTaxonomy exposes no public function for "all terms that declare membership in this group." Both direct queries are guarded with `SHOW TABLES LIKE` before running, so a HyperTaxonomy schema change degrades to an empty result (no relevance ordering / no Collection members) rather than a fatal error.
 
 ## Feature flags checked
 
@@ -60,6 +60,7 @@ A [concept document](concept-uris.html#concept-document) also holds its neighbor
 | `htax_term_groups_changed` | HyperTaxonomy (Term Group membership, which changes inclusions that come through groups) |
 | `htax_relationship_saved`, `htax_relationship_deleted` | HyperTaxonomy |
 | `htax_redirect_changed`, `htax_redirect_removed` | HyperTaxonomy |
+| `htax_after_merge_terms` | HyperTaxonomy, once a merge is committed (its source terms are deleted inside a database transaction) |
 | `htax_term_visibility_changed` | HyperTaxonomy |
 | `htax_term_uris_changed` | HyperTaxonomy (relayed from TermConnect) |
 | `htax_term_locations_changed` | HyperTaxonomy (relayed from As the Crow Flies) |
@@ -67,7 +68,7 @@ A [concept document](concept-uris.html#concept-document) also holds its neighbor
 
 Anything else is picked up when the cache expires.
 
-WP-SKOS does not depend on TermConnect or As the Crow Flies directly. HyperTaxonomy listens for `tc_term_uris_changed` and `atcf_term_location_changed` and [re-fires them](https://hypertaxonomy.org/hypertaxonomy/developer-reference/actions-filters.html#external-uris-or-locations-changed) under its own namespace so downstream plugins only need to depend on HyperTaxonomy.
+WP-SKOS does not depend on TermConnect or As the Crow Flies directly. HyperTaxonomy listens for `tconn_term_uris_changed` and `atcf_term_location_changed` and [re-fires them](https://hypertaxonomy.org/hypertaxonomy/developer-reference/actions-filters.html#external-uris-or-locations-changed) under its own namespace so downstream plugins only need to depend on HyperTaxonomy.
 
 All transients, the `wpskos_settings` option and the `wpskos_cache_generation` option are deleted when the plugin is uninstalled via the WordPress Plugins screen.
 

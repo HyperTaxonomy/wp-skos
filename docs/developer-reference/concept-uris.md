@@ -21,9 +21,9 @@ How concept, scheme, collection and vocabulary property URIs respond, and the JS
 
 `GET /wp-skos/concept/{taxonomy}/{slug}` and `GET /wp-skos/scheme/{taxonomy}` inspect the `Accept` header:
 
-- An `Accept` header containing `application/ld+json` → JSON-LD response
+- An `Accept` header containing `application/ld+json` →&nbsp;JSON-LD response
 - An `Accept` header containing `text/html` but not `application/ld+json` → `303 See Other` redirect
-- Any other `Accept` header, including a bare `*/*` or no header at all → JSON-LD response
+- Any other `Accept` header, including a bare `*/*` or no header at all&nbsp;→ JSON-LD response
 
 This allows browsers that explicitly ask for HTML to navigate to a human-readable page, while semantic clients and generic HTTP tools — which typically send `Accept: */*` — get JSON-LD by default.
 
@@ -188,4 +188,4 @@ When HyperTaxonomy is active, each [term group](https://hypertaxonomy.org/hypert
 }
 ```
 
-Collections are always served as JSON-LD, with no 303 redirect to the group's archive, and are built on demand without caching, since membership changes are not reliably invalidated. A hidden group returns `404` for every viewer, and hidden child groups and member concepts are left out of `skos:member`. Member concepts are included only when their taxonomy is enabled in Settings → WP-SKOS. The `skos:member` key is omitted entirely when there are no visible members. Without HyperTaxonomy, the endpoint returns `404`.
+Collections are always served as JSON-LD, with no 303 redirect to the group's archive, and are built on demand without caching, since membership changes are not reliably invalidated. A hidden group returns `404` for every viewer, and hidden child groups and member concepts are left out of `skos:member`. Member concepts are included only when their taxonomy is enabled in Settings&nbsp;→ WP-SKOS. The `skos:member` key is omitted entirely when there are no visible members. Without HyperTaxonomy, the endpoint returns `404`.
