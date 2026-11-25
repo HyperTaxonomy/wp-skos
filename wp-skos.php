@@ -20,17 +20,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPSKOS_VERSION',         '1.0.0' );
-define( 'WPSKOS_DIR',             plugin_dir_path( __FILE__ ) );
-define( 'WPSKOS_URL',             plugin_dir_url( __FILE__ ) );
+define( 'WPSKOS_VERSION', '1.0.0' );
+define( 'WPSKOS_DIR', plugin_dir_path( __FILE__ ) );
+define( 'WPSKOS_URL', plugin_dir_url( __FILE__ ) );
 // Stable namespace for built-in WP-SKOS properties (wpskos:includes, wpskos:container, wpskos:synonym).
 // Custom relationship type properties use {home_url}/wp-skos/vocab/{slug} instead.
-define( 'WPSKOS_VOCAB_NS',        'https://hypertaxonomy.org/wp-skos/vocab/' );
-define( 'WPSKOS_SKOSMOS_PREFIX',  'skosmos/rest/v1' );
+define( 'WPSKOS_VOCAB_NS', 'https://hypertaxonomy.org/wp-skos/vocab/' );
+define( 'WPSKOS_SKOSMOS_PREFIX', 'skosmos/rest/v1' );
 
 // Load translations. Hooked on init (not plugins_loaded) per WordPress 6.7+ guidance.
 add_action( 'init', static function () {
-    load_plugin_textdomain( 'wp-skos', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	load_plugin_textdomain( 'wp-skos', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 } );
 
 require_once WPSKOS_DIR . 'includes/class-settings.php';

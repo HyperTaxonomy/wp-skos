@@ -263,7 +263,7 @@ class WPSKOS_Builder {
 		}
 
 		$rel_data ??= self::fetch_relationship_data( $term );
-		$related   = array();
+		$related    = array();
 
 		// Built-in: inclusions and containers (cross-branch only; HT excludes ancestors/descendants).
 		foreach ( $rel_data['included'] as $t_id => $t ) {
@@ -316,7 +316,7 @@ class WPSKOS_Builder {
 		}
 
 		$rel_data ??= self::fetch_relationship_data( $term );
-		$typed     = array();
+		$typed      = array();
 
 		// Synonyms: mutual inclusions. HT exposes a dedicated helper if available.
 		$synonyms = $rel_data['synonyms'];
@@ -399,7 +399,7 @@ class WPSKOS_Builder {
 
 			// Wikidata: document URL uses /wiki/Q…; entity URI for closeMatch is /entity/Q….
 			// www. is optional — wikidata.org/wiki/... without the subdomain is equally valid.
-			$is_wikidata = (bool) preg_match( '#^https?://(?:www\.)?wikidata\.org/wiki/(Q\d+)#', $url, $m );
+			$is_wikidata     = (bool) preg_match( '#^https?://(?:www\.)?wikidata\.org/wiki/(Q\d+)#', $url, $m );
 			$close_match_uri = $is_wikidata
 				? 'http://www.wikidata.org/entity/' . $m[1]
 				: $url;
@@ -555,9 +555,12 @@ class WPSKOS_Builder {
 
 		if ( ! empty( $term->description ) ) {
 			// Plain-text descriptions become skos:definition; HTML gets scopeNote.
-			$is_plain = ( $term->description === wp_strip_all_tags( $term->description ) );
-			$prop     = $is_plain ? 'skos:definition' : 'skos:scopeNote';
-			$data[ $prop ] = array( '@value' => wp_strip_all_tags( $term->description ), '@language' => self::term_language( $term ) );
+			$is_plain      = ( $term->description === wp_strip_all_tags( $term->description ) );
+			$prop          = $is_plain ? 'skos:definition' : 'skos:scopeNote';
+			$data[ $prop ] = array(
+				'@value' => wp_strip_all_tags( $term->description ),
+				'@language' => self::term_language( $term ),
+			);
 		}
 
 		// Hierarchy. Hidden terms (HT) are omitted for every viewer so the hierarchy
@@ -646,7 +649,7 @@ class WPSKOS_Builder {
 		if ( function_exists( 'htax_get_redirect_target' ) ) {
 			$target = htax_get_redirect_target( $term->term_id );
 			if ( $target instanceof WP_Term ) {
-				$data['owl:deprecated'] = true;
+				$data['owl:deprecated']   = true;
 				$data['dct:isReplacedBy'] = array( '@id' => self::concept_uri( $target->taxonomy, $target->slug ) );
 			}
 		}
@@ -683,7 +686,10 @@ class WPSKOS_Builder {
 		// Term archive URL.
 		$archive_url = get_term_link( $term );
 		if ( ! is_wp_error( $archive_url ) ) {
-			$data['rdfs:seeAlso'][] = array( '@id' => $archive_url, '@type' => 'foaf:Document' );
+			$data['rdfs:seeAlso'][] = array(
+				'@id' => $archive_url,
+				'@type' => 'foaf:Document',
+			);
 		}
 
 		// Discovery link to document search endpoint.
@@ -834,7 +840,10 @@ class WPSKOS_Builder {
 		return array(
 			'@type'             => 'skos:ConceptScheme',
 			'@id'               => $scheme_uri,
-			'skos:prefLabel'    => array( '@value' => $tax_obj->label, '@language' => $lang ),
+			'skos:prefLabel'    => array(
+				'@value' => $tax_obj->label,
+				'@language' => $lang,
+			),
 			'skos:hasTopConcept' => $has_top_concepts,
 		);
 	}
@@ -1009,9 +1018,9 @@ class WPSKOS_Builder {
 				if ( ! isset( $types[ $slug ] ) ) {
 					return null;
 				}
-				$type        = $types[ $slug ];
+				$type         = $types[ $slug ];
 				$is_symmetric = (bool) ( $type['symmetric'] ?? false );
-				$parent_prop = $is_symmetric
+				$parent_prop  = $is_symmetric
 					? 'http://www.w3.org/2004/02/skos/core#related'
 					: 'http://www.w3.org/2004/02/skos/core#semanticRelation';
 
@@ -1065,7 +1074,10 @@ class WPSKOS_Builder {
 	public static function labels_to_jsonld( array $labels ): array {
 		$out = array();
 		foreach ( $labels as $lang => $value ) {
-			$out[] = array( '@value' => $value, '@language' => $lang );
+			$out[] = array(
+				'@value' => $value,
+				'@language' => $lang,
+			);
 		}
 		return $out;
 	}

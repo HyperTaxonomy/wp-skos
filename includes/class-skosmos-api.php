@@ -28,8 +28,8 @@ class WPSKOS_Skosmos_API {
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
-		add_action( 'init',              array( __CLASS__, 'add_rewrite_rules' ) );
-		add_filter( 'query_vars',        array( __CLASS__, 'add_query_vars' ) );
+		add_action( 'init', array( __CLASS__, 'add_rewrite_rules' ) );
+		add_filter( 'query_vars', array( __CLASS__, 'add_query_vars' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'dispatch' ) );
 	}
 
@@ -496,5 +496,4 @@ class WPSKOS_Skosmos_API {
 		echo wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 		exit;
 	}
-
 }

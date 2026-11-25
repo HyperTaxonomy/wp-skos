@@ -31,7 +31,10 @@ function wpskos_uninstall_cleanup(): void {
 }
 
 if ( is_multisite() ) {
-	foreach ( get_sites( array( 'number' => 0, 'fields' => 'ids' ) ) as $wpskos_site_id ) {
+	foreach ( get_sites( array(
+		'number' => 0,
+		'fields' => 'ids',
+	) ) as $wpskos_site_id ) {
 		switch_to_blog( $wpskos_site_id );
 		wpskos_uninstall_cleanup();
 		restore_current_blog();

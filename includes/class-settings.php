@@ -19,8 +19,8 @@ class WPSKOS_Settings {
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
-		add_action( 'admin_menu',  array( __CLASS__, 'add_menu' ) );
-		add_action( 'admin_init',  array( __CLASS__, 'register_settings' ) );
+		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
+		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 	}
 
 	/**
@@ -71,7 +71,10 @@ class WPSKOS_Settings {
 	 */
 	public static function field_enabled_taxonomies(): void {
 		$enabled = self::get_enabled_taxonomies();
-		$all     = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
+		$all     = get_taxonomies( array(
+			'public' => true,
+			'show_ui' => true,
+		), 'objects' );
 		foreach ( $all as $taxonomy ) {
 			$checked = in_array( $taxonomy->name, $enabled, true );
 			printf(

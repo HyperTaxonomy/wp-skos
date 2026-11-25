@@ -21,8 +21,8 @@ class WPSKOS_Concept_URI {
 	 * @since 1.0.0
 	 */
 	public static function register(): void {
-		add_action( 'init',              array( __CLASS__, 'add_rewrite_rules' ) );
-		add_filter( 'query_vars',        array( __CLASS__, 'add_query_vars' ) );
+		add_action( 'init', array( __CLASS__, 'add_rewrite_rules' ) );
+		add_filter( 'query_vars', array( __CLASS__, 'add_query_vars' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'dispatch' ) );
 	}
 
@@ -34,8 +34,8 @@ class WPSKOS_Concept_URI {
 	public static function add_rewrite_rules(): void {
 		add_rewrite_rule( '^wp-skos/concept/([^/]+)/([^/]+)/?$', 'index.php?wpskos_concept_tax=$matches[1]&wpskos_concept=$matches[2]', 'top' );
 		add_rewrite_rule( '^wp-skos/collection/([^/]+)/?$', 'index.php?wpskos_collection=$matches[1]', 'top' );
-		add_rewrite_rule( '^wp-skos/scheme/([^/]+)/?$',  'index.php?wpskos_scheme=$matches[1]',  'top' );
-		add_rewrite_rule( '^wp-skos/vocab/([^/]+)/?$',   'index.php?wpskos_vocab=$matches[1]',   'top' );
+		add_rewrite_rule( '^wp-skos/scheme/([^/]+)/?$', 'index.php?wpskos_scheme=$matches[1]', 'top' );
+		add_rewrite_rule( '^wp-skos/vocab/([^/]+)/?$', 'index.php?wpskos_vocab=$matches[1]', 'top' );
 	}
 
 	/**
@@ -220,10 +220,9 @@ class WPSKOS_Concept_URI {
 	 * @since 1.0.0
 	 */
 	private static function prefers_html(): bool {
-		$accept = isset( $_SERVER['HTTP_ACCEPT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) ) : '';
-		$wants_html    = strpos( $accept, 'text/html' ) !== false;
-		$wants_jsonld  = strpos( $accept, 'application/ld+json' ) !== false;
+		$accept       = isset( $_SERVER['HTTP_ACCEPT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) ) : '';
+		$wants_html   = strpos( $accept, 'text/html' ) !== false;
+		$wants_jsonld = strpos( $accept, 'application/ld+json' ) !== false;
 		return $wants_html && ! $wants_jsonld;
 	}
-
 }

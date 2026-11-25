@@ -123,7 +123,7 @@ class WPSKOS_Document_Search {
 		$expanded_per_concept = array();
 		$all_expanded_ids     = array();
 		foreach ( $resolved_terms as $uri => $term ) {
-			$ids = self::expand_term_ids( $term );
+			$ids                          = self::expand_term_ids( $term );
 			$expanded_per_concept[ $uri ] = $ids;
 			$all_expanded_ids             = array_merge( $all_expanded_ids, $ids );
 		}
@@ -167,14 +167,14 @@ class WPSKOS_Document_Search {
 
 		// The taxonomies of the queried concepts gate which relationship types count
 		// toward relevance, per their enabled features.
-		$taxonomies  = array();
+		$taxonomies = array();
 		foreach ( $resolved_terms as $term ) {
 			$taxonomies[ $term->taxonomy ] = true;
 		}
 		$page_ids = self::ranked_page_ids( $candidate_sql, $all_expanded_ids, array_keys( $taxonomies ), $per_page, ( $page - 1 ) * $per_page );
 
 		// Load the page's posts, preserving rank order.
-		$posts    = array();
+		$posts = array();
 		foreach ( $page_ids as $pid ) {
 			$post = get_post( $pid );
 			if ( $post instanceof WP_Post ) {
@@ -193,7 +193,7 @@ class WPSKOS_Document_Search {
 			'foaf_depth' => max( 0, (int) $request->get_param( 'foaf_depth' ) ),
 			'per_page'   => $per_page,
 		);
-		$results = self::append_external_documents( $results, $resolved_terms, $page, $per_page, $external_args, $operator );
+		$results       = self::append_external_documents( $results, $resolved_terms, $page, $per_page, $external_args, $operator );
 
 		$response = new WP_REST_Response(
 			self::build_envelope( $results, $total, $page, $per_page ),
@@ -324,8 +324,8 @@ class WPSKOS_Document_Search {
 		$gate_params = array();
 		$gate_parts  = array();
 		foreach ( $taxonomies as $tax ) {
-			$allowed = self::allowed_rel_types( (string) $tax );
-			$rel_ph  = implode( ',', array_fill( 0, count( $allowed ), '%s' ) );
+			$allowed       = self::allowed_rel_types( (string) $tax );
+			$rel_ph        = implode( ',', array_fill( 0, count( $allowed ), '%s' ) );
 			$gate_parts[]  = "(taxonomy = %s AND relationship_type IN ($rel_ph))";
 			$gate_params[] = (string) $tax;
 			foreach ( $allowed as $rt ) {
@@ -558,7 +558,10 @@ class WPSKOS_Document_Search {
 					continue;
 				}
 				if ( ! isset( $by_url[ $url ] ) ) {
-					$by_url[ $url ] = array( 'post' => $doc, 'subjects' => array() );
+					$by_url[ $url ] = array(
+						'post' => $doc,
+						'subjects' => array(),
+					);
 				} elseif ( (float) ( $doc['score'] ?? 0 ) > (float) ( $by_url[ $url ]['post']['score'] ?? 0 ) ) {
 					$by_url[ $url ]['post'] = $doc;
 				}
