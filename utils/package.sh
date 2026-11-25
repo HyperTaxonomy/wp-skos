@@ -78,6 +78,7 @@ rules += [
     ('.git',       True,  False),
     ('.github',    True,  False),
     ('.distignore', False, False),
+    ('phpcs.xml.dist', False, False),
     ('.gitignore', False, False),
     ('.wordpress-org', True, False),
     ('docs', True, True),

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<ruleset name="WP-SKOS">
+    <description>WordPress Coding Standards for WP-SKOS plugin.</description>
+
+    <file>.</file>
+
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/dist/*</exclude-pattern>
+    <exclude-pattern>*/build/*</exclude-pattern>
+    <!-- Local developer scripts; not shipped (see utils/package.sh). -->
+    <exclude-pattern>*/utils/*</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <config name="minimum_wp_version" value="5.3"/>
+    <config name="testVersion" value="7.4-"/>
+
+    <rule ref="PHPCompatibilityWP"/>
+
+    <!-- Project uses WordPress's default tab indentation. -->
+    <rule ref="WordPress">
+        <!-- Not a WordPress rule (Squiz). WordPress Core itself does not require
+             inline comments to end with a full stop. -->
+        <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+
+        <!-- Alignment of => and = is a formatting opinion, not correctness. -->
+        <exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
+
+        <!-- Pedantic multi-line function call structure not required by WP guidelines. -->
+        <exclude name="PEAR.Functions.FunctionCallSignature"/>
+
+        <!-- Translators comments are good practice but noisy during development. -->
+        <exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
+        <exclude name="WordPress.WP.I18n.MultipleOrderedPlaceholders"/>
+    </rule>
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="wp-skos"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="wpskos"/>
+                <element value="wp_skos"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>
